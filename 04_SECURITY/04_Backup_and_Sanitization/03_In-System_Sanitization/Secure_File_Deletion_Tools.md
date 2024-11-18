@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Secure File Deletion Tools</title>
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #000;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+  </style>
+</head>
+<body>
+  <h1>Comparison of Secure File Deletion Tools</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Tool</th>
+        <th>Description</th>
+        <th>Command to Delete Single File</th>
+        <th>Command to Delete Folder</th>
+        <th>Command for Recursive Deletion</th>
+        <th>Effectiveness on SSD</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Highly Effective Tools for SSDs -->
+      <tr>
+        <th colspan="7" style="background-color: #e0e0e0;">Highly Effective Tools for SSDs</th>
+      </tr>
+      <tr>
+        <td><strong>hdparm</strong></td>
+        <td>Utilizes the built-in secure erase feature of SSDs or HDDs.</td>
+        <td><em>Not applicable</em></td>
+        <td><em>Not applicable</em></td>
+        <td><em>Not applicable</em></td>
+        <td>Highly Effective</td>
+        <td>Recommended for full drive erasure, works well with SSDs.<br>
+          <code>hdparm --user-master u --security-erase-enhanced password /dev/sdX</code></td>
+      </tr>
+      <tr>
+        <td><strong>blkdiscard</strong></td>
+        <td>Issues TRIM commands to discard all data on the drive.</td>
+        <td><em>Not applicable</em></td>
+        <td><em>Not applicable</em></td>
+        <td><em>Not applicable</em></td>
+        <td>Highly Effective</td>
+        <td>Efficient for full SSD wiping using TRIM, but less effective for overwritten/encrypted data.<br>
+          <code>blkdiscard /dev/sdX</code></td>
+      </tr>
+      <!-- Partially Effective Tools for SSDs / Effective on HDDs -->
+      <tr>
+        <td><strong>File Encryption (Proactive Approach)</strong></td>
+        <td>The most reliable way to ensure data is irrecoverable when deleted is to encrypt the file beforehand.</td>
+        <td>Not applicable</td>
+        <td>Not applicable</td>
+        <td>Not applicable</td>
+        <td>Partially Effective</td>
+        <td>If a file is encrypted before being stored on an SSD, you can delete the encrypted file, making recovery nearly impossible without the decryption key. Combine with TRIM using <code>fstrim</code> for optimal results.</td>
+      </tr>
+      <tr>
+        <th colspan="7" style="background-color: #e0e0e0;">Partially Effective on SSDs / Effective on HDDs</th>
+      </tr>
+      <tr>
+        <td><strong>Secure-Delete (srm)</strong></td>
+        <td>Overwrites files with multiple passes to prevent recovery.</td>
+        <td><code>srm file</code></td>
+        <td><code>srm -r folder/</code></td>
+        <td><code>srm -r folder/</code></td>
+        <td>Partially Effective</td>
+        <td>Effective on HDDs, but SSDs may bypass the overwriting due to TRIM.</td>
+      </tr>
+      <tr>
+        <td><strong>BleachBit</strong></td>
+        <td>Securely deletes files and frees disk space through a user-friendly GUI or command-line.</td>
+        <td><code>bleachbit --delete file</code></td>
+        <td><code>bleachbit --delete folder/*</code></td>
+        <td><code>bleachbit -s folder/</code></td>
+        <td>Partially Effective</td>
+        <td>Great for general system cleanup but ineffective on SSDs due to TRIM.</td>
+      </tr>
+      <!-- Less Effective Tools (SSD Incompatible, Useful for HDDs) -->
+      <tr>
+        <th colspan="7" style="background-color: #e0e0e0;">Less Effective on SSDs (Best for HDDs)</th>
+      </tr>
+      <tr>
+        <td><strong>Shred</strong></td>
+        <td>Overwrites files with random data to make recovery difficult.</td>
+        <td><code>shred -u file</code></td>
+        <td><em>Not directly supported</em></td>
+        <td><code>find folder -type f -exec shred -u {} \;</code></td>
+        <td>Ineffective</td>
+        <td>Primarily for HDDs. Requires additional commands for folder handling, ineffective on SSDs.</td>
+      </tr>
+      <tr>
+        <td><strong>Wipe</strong></td>
+        <td>Recursively deletes and overwrites files and directories.</td>
+        <td><code>wipe -f file</code></td>
+        <td><code>wipe -r folder/</code></td>
+        <td><code>wipe -rfi folder/</code></td>
+        <td>Ineffective</td>
+        <td>No longer maintained. Works for HDDs, but not for SSDs due to TRIM.</td>
+      </tr>
+      <tr>
+        <td><strong>Nautilus Wipe</strong></td>
+        <td>Adds secure deletion options in the file manager's right-click menu for easy access.</td>
+        <td>Right-click and select "Wipe"</td>
+        <td>Right-click and select "Wipe"</td>
+        <td><em>No command-line support</em></td>
+        <td>Ineffective</td>
+        <td>Best for GUI users, but not effective on SSDs due to TRIM.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>References</h2>
+  <ol>
+    <li>Master Thesis - Josef Al-Saydali and Mahdi Al-Saydali. Anti-forensic Techniques: Feasibility and Efficiency against Forensic Tools. 2023.</li>
+    <li>Semi Yulianto 2nd Benfano Soewito Investigating the Impact on Data Recovery in Computer Forensics. IEEE International Conference on Cryptography, Informatics, and Cybersecurity (ICoCICs).  2023</li>
+    <li>Ölvecký, M. and Gabriška, D. Wiping techniques and anti-forensics methods. IEEE 16th International Symposium on Intelligent Systems and Informatics (SISY), 2018.</li>
+    <li>Michael W., Laura M. G., Frederick E. S., Steven Swanson. Reliably Erasing Data From Flash-Based Solid State Drives. 2010 </li>
+    <li>NIST Guidelines for Media Sanitization. Available at: https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-88r1.pdf</li>
+  </ol>
+
+</body>
+</html>

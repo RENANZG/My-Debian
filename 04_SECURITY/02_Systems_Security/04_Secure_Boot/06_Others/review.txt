@@ -1,0 +1,16 @@
+<p>For example, use it to sign our EFI binary:</p>
+<pre><code>
+$ sudo sbsign --key MOK.priv --cert MOK.pem my_binary.efi --output my_binary.efi.signed</code></pre>
+<p>As long as the signing key is enrolled in shim and does not contain the Object Identifier (OID) from earlier (since that limits the use of the key to kernel module signing), the binary should be loaded just fine by shim.</p>
+<p>5.VirtualBox Sign Helper Script</p>
+<p>Future kernel updates would require the updated kernels to be signed again, so it makes sense to put the signing commands in a script that can be run at a later date as necessary (DKMS package could do it automatically).</p>
+<pre><code>
+$ sudo touch /var/lib/shim-signed/modules/sign-modules 
+$ sudo nano /var/lib/shim-signed/modules/sign-modules 
+#!/bin/bash for modfile in $(dirname $(modinfo -n [yourmodulehere]))/.ko; do echo &quot;Signing $modfile&quot; /usr/src/linux-headers-$(uname -r)/scripts/sign-file sha256 \ /var/lib/shim-signed/modules/module.priv \ /var/lib/shim-signed/modules/module.der &quot;$modfile&quot; done
+</code></pre>
+<p>Add execution permission, and run the script above as root from the /var/lib/shim-signed/modules/ directory.</p>
+<pre><code>sh $ sudo -i $ cd /var/lib/shim-signed/modules $ chmod 700 /var/lib/shim-signed/modules/sign-vbox-modules ./sign-vbox-modules</code></pre>
+<p>Load vboxdrv module and launch VirtualBox.</p>
+<pre><code>
+$ sudo modprobe vboxdrv or $ /sbin/modprobe vboxdrv</code></pre>

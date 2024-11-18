@@ -1,0 +1,109 @@
+#!/bin/bash
+
+export PATH=/bin:/usr/bin:/usr/local/bin:/sbin:/usr/sbin:/usr/local/sbin
+umask 077
+
+# Help message
+if [ "x" == "x$1" -o "$1" == "-h" -o "$1" == "--help" ]; then
+    echo "Usage: $(basename $0) <fqdn>"
+    echo "This script generates CA certificates and prepares EFI signature lists."
+    exit 1
+fi
+
+# Input variables
+FQDN="$1"
+FQDN_SAFE="$(echo $1 | sed 's/*/star/g')"
+CA_DIRECTORY="$HOME/MySsl"
+CERT_DIRECTORY="$CA_DIRECTORY/$FQDN_SAFE"
+CA_SUBJECT='/C=CH/O=Bitbull-CA/CN=LAB-Auth'
+CERT_SUBJECT='/C=CH/ST=SG/L=Flawil/O=Bitbull'
+VALIDITY_DAYS=3650
+CA_KEY_LENGTH=4096
+CERT_KEY_LENGTH=2048
+
+# Create necessary directories
+mkdir -p ${CA_DIRECTORY}/ca
+mkdir -p ${CERT_DIRECTORY}/{servers,tmp}
+cd "${CERT_DIRECTORY}" || exit 1
+
+# Create CA key if it doesn't exist
+if [ -f "${CA_DIRECTORY}/ca/root.key.pem" ]; then
+    echo "------ Skip creation of ${CA_DIRECTORY}/ca/root.key.pem, it is already present"
+else
+    echo "------ Create root key"
+    openssl genrsa -out "${CA_DIRECTORY}/ca/root.key.pem" $CA_KEY_LENGTH
+    find "${CA_DIRECTORY}/ca/root.key.pem"
+fi
+
+# Create CA certificate if it doesn't exist
+if [ -f "${CA_DIRECTORY}/ca/root.crt.pem" ]; then
+    echo "------ Skip creation of ${CA_DIRECTORY}/ca/root.crt.pem, it is already present"
+else
+    echo "------ Create intermediate cert"
+    openssl req -x509 -new -nodes -key "${CA_DIRECTORY}/ca/root.key.pem" -days $VALIDITY_DAYS -out "${CA_DIRECTORY}/ca/root.crt.pem" -subj "$CA_SUBJECT"
+    find  "${CA_DIRECTORY}/ca/root.crt.pem"
+fi
+
+# Check for existing server key
+if [ -f "${CERT_DIRECTORY}/servers/${FQDN_SAFE}_privkey.pem" ]; then
+    echo "------ ERROR: ${CERT_DIRECTORY}/servers/${FQDN_SAFE}_privkey.pem already exists. Remove this file first:"
+    ls -l ${CERT_DIRECTORY}/servers/${FQDN_SAFE}_*
+    exit 1
+else
+    echo "------ Create server private key"
+    openssl genrsa -out "${CERT_DIRECTORY}/servers/${FQDN}_privkey.pem" $CERT_KEY_LENGTH
+
+    echo "------ Create server CSR"
+    openssl req -key "${CERT_DIRECTORY}/servers/${FQDN_SAFE}_privkey.pem" -new -sha256 -out "tmp/${FQDN_SAFE}.csr.pem" -subj "$CERT_SUBJECT/CN=${FQDN}"
+
+    echo "------ Sign CSR"
+    openssl x509 -req -in "tmp/${FQDN_SAFE}.csr.pem" -CA "${CA_DIRECTORY}/ca/root.crt.pem" -CAkey "${CA_DIRECTORY}/ca/root.key.pem" -CAcreateserial -out "${CERT_DIRECTORY}/servers/${FQDN_SAFE}_cert.pem" -days $VALIDITY_DAYS
+
+    echo "------ Prepare cert chain"
+    cat "${CA_DIRECTORY}/ca/root.crt.pem" > "${CERT_DIRECTORY}/servers/${FQDN_SAFE}_ca_chain.pem"
+
+    echo "------ SHOW RESULTS"
+    find "$CERT_DIRECTORY"
+    echo "--- Done"
+fi
+
+# Prompt for common name
+echo -n "Enter a Common Name to embed in the keys: "
+read COMMON_NAME
+
+# Generate PK, KEK, and DB certificates and keys
+for CERT in PK KEK DB; do
+    openssl req -new -x509 -newkey rsa:2048 -subj "/CN=$COMMON_NAME $CERT/" -keyout $CERT.key -out $CERT.crt -days 3650 -nodes -sha256
+    openssl x509 -in $CERT.crt -out $CERT.cer -outform DER
+done
+
+# Generate UUID and EFI signature lists
+GUID=$(uuidgen)
+echo $GUID > myGUID.txt
+
+for CERT in PK KEK DB; do
+    cert-to-efi-sig-list -g $GUID $CERT.crt $CERT.esl
+done
+rm -f noPK.esl
+touch noPK.esl
+
+# Sign EFI signature lists
+for LIST in PK.esl noPK.esl; do
+    sign-efi-sig-list -t "$(date --date='1 second' +'%Y-%m-%d %H:%M:%S')" -k PK.key -c PK.crt PK $LIST ${LIST%.esl}.auth
+done
+
+for CERT in KEK DB; do
+    sign-efi-sig-list -t "$(date --date='1 second' +'%Y-%m-%d %H:%M:%S')" -k PK.key -c PK.crt $CERT $CERT.esl $CERT.auth
+done
+
+# Set permissions and provide user instructions
+chmod 0600 *.key
+
+echo ""
+echo "For use with KeyTool, copy the *.auth and *.esl files to a FAT USB flash drive or to your EFI System Partition (ESP)."
+echo "For use with most UEFIs' built-in key managers, copy the *.cer files."
+echo ""
+
+# Copy files to EFI system partition
+cp -rf DB.auth KEK.auth PK.auth /boot/efi
+ls /boot/efi

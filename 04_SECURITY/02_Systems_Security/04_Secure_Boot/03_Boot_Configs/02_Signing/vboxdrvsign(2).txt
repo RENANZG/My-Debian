@@ -1,0 +1,9 @@
+#!/bin/sh -x
+vboxconfig
+openssl req -new -x509 -newkey rsa:2048 -keyout vboxdrv.priv -outform DER -out vboxdrv.der -nodes -days 36500 -subj "/CN=ltdeE7470/"
+for f in $(dirname $(modinfo -n vboxdrv))/*.ko; do echo "Assinando arquivo $f"; sudo /usr/src/kernels/$(uname -r)/scripts/sign-file sha256 ./vboxdrv.priv ./vboxdrv.der $f; done
+mokutil --import vboxdrv.der
+systemctl stop vboxdrv
+systemctl start vboxdrv
+systemctl status vboxdrv
+init 6
