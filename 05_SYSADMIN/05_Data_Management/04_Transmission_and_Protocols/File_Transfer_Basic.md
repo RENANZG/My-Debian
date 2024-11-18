@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basic Data Transfer Methods Comparison</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+        }
+        table {
+            width: calc(100% - 1mm);
+            margin: 0.5mm;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 6px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        code {
+            background-color: #f8f8f8;
+            padding: 3px;
+            border: 1px solid #ddd;
+            font-size: 13px;
+            margin: 0;
+            display: inline-block;
+        }
+        ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Basic Data Transfer Methods Comparison</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Method</th>
+      <th>Usage</th>
+      <th>Features</th>
+      <th>Examples</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <tr>
+      <td>cp</td>
+      <td>Copy files and directories locally</td>
+      <td>
+        <ul>
+          <li>Simple command to copy files and directories.</li>
+          <li>Preserves file permissions by default.</li>
+          <li>Supports recursive copying and various options for detailed control.</li>
+        </ul>
+      </td>
+      <td>
+        <ul>
+          <li>Copy recursively</li>
+          <li><code>cp -r /source/dir /destination/dir</code></li>
+          <li>Preserve file attributes and permissions</li>
+          <li><code>cp -a /source/dir /destination/dir</code></li>
+          <li>Interactive copying, prompt before overwrite</li>
+          <li><code>cp -i /source/file /destination/file</code></li>
+          <li>Copy and preserve timestamps</li>
+          <li><code>cp -p /source/file /destination/file</code></li>
+          <li>Verbose mode, show detailed information</li>
+          <li><code>cp -v /source/file /destination/file</code></li>
+          <li>Force overwrite of existing files</li>
+          <li><code>cp -f /source/file /destination/file</code></li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td>pv</td>
+      <td>Pipe viewer, monitors data through a pipeline</td>
+      <td>
+        <ul>
+          <li>Monitors the progress of data through a pipeline.</li>
+          <li>Can be combined with other commands to display data transfer rate and progress.</li>
+          <li>Useful for monitoring long-running data transfers.</li>
+        </ul>
+      </td>
+      <td>
+        <ul>
+          <li>Monitor progress of file transfer</li>
+          <li><code>pv /source/file &gt; /destination/file</code></li>
+          <li>Limit data rate to a specific value</li>
+          <li><code>tar czf - /path/to/dir | pv -L 1M &gt; backup.tar.gz</code></li>
+          <li>Show elapsed time and ETA</li>
+          <li><code>pv -T /source/file &gt; /destination/file</code></li>
+          <li>Display transfer rate in bytes per second</li>
+          <li><code>pv -r /source/file &gt; /destination/file</code></li>
+          <li>Monitor network throughput</li>
+          <li><code>ifconfig eth0 | pv -N NetworkThroughput &gt; /dev/null</code></li>
+          <li>Combine with other commands using a pipeline</li>
+          <li><code>cat /source/file | pv | gzip &gt; /destination/file.gz</code></li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td>dd</td>
+      <td>Low-level disk copy, block by block</td>
+      <td>
+        <ul>
+          <li>Powerful tool for copying and converting data at the byte level.</li>
+          <li>Used for disk cloning, backups, and data recovery.</li>
+          <li>Supports various options for block size, error handling, and status reporting.</li>
+        </ul>
+      </td>
+      <td>
+        <ul>
+          <li>Create an exact copy of a disk with progress</li>
+          <li><code>dd if=/dev/sda of=/dev/sdb bs=1M status=progress</code></li>
+          <li>Copy specific number of blocks</li>
+          <li><code>dd if=/dev/sda of=/dev/sdb count=1000</code></li>
+          <li>Create a sparse file with holes</li>
+          <li><code>dd if=/dev/zero of=sparse-file bs=1M seek=1024 count=0</code></li>
+          <li>Copy data with a different block size</li>
+          <li><code>dd if=/dev/sda of=/dev/sdb bs=4k</code></li>
+          <li>Convert uppercase to lowercase in a file</li>
+          <li><code>dd if=input.txt of=output.txt conv=lcase</code></li>
+          <li>Clone a disk and skip errors</li>
+          <li><code>dd if=/dev/sda of=/dev/sdb conv=noerror,sync</code></li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td>dump</td>
+      <td>Backup utility for file systems</td>
+      <td>
+        <ul>
+          <li>Utility for backing up file systems to various media.</li>
+          <li>Supports incremental backups, making it efficient for regular backups.</li>
+          <li>Handles large file systems and provides detailed control over the backup process.</li>
+          <li>Capable of performing live backups on ext2/3/4 filesystems.</li>
+        </ul>
+      </td>
+      <td>
+        <ul>
+          <li>Create an incremental backup of a file system</li>
+          <li><code>dump -0uan /dev/sda1 /backup</code></li>
+          <li>Restore files from a backup</li>
+          <li><code>restore -r -f /backup/dumpfile</code></li>
+          <li>Backup a specific directory with exclusion list</li>
+          <li><code>dump -0auf /backup/dumpfile /source/dir -X /source/dir/exclude-list</code></li>
+          <li>Create a compressed backup archive</li>
+          <li><code>dump -0uan /dev/sda1 - | gzip &gt; /backup/dumpfile.gz</code></li>
+          <li>Verify integrity of a backup dumpfile</li>
+          <li><code>restore -i -f /backup/dumpfile</code></li>
+          <li>Backup a file system to a remote server</li>
+          <li><code>dump -0uan /dev/sda1 | ssh user@remote-server "cat &gt; /backup/dumpfile"</code></li>
+          <li>Create a live backup using LVM snapshots</li>
+          <li><code>lvcreate --size 1G --snapshot --name snap /dev/vgname/lvname && dump -0uan /dev/vgname/snap /backup && lvremove /dev/vgname/snap</code></li>
+          <li>Freeze filesystem, perform dump, and unfreeze</li>
+          <li><code>fsfreeze -f /mnt && dump -0uan /dev/sda1 /backup && fsfreeze -u /mnt</code></li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+</body>
+</html>

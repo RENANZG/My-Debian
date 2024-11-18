@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Setting Up Web Server Environment on Debian GNU/Linux</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      margin: 20px;
+      max-width: 800px;
+    }
+    code {
+      background-color: #f0f0f0;
+      padding: 2px 5px;
+      border: 1px solid #ccc;
+      font-family: "Courier New", Courier, monospace;
+    }
+  </style>
+</head>
+<body>
+  <h1>Setting Up Web Server</h1>
+
+  <h2>Setting Order</h2>
+  <ol>
+    <li>Start with installing necessary packages (Nginx, OpenSSL, mSMTP, MySQL, Shorewall).</li>
+    <li>Configure SSL/TLS for secure connections.</li>
+    <li>Set up PHP handling in Nginx for dynamic content.</li>
+    <li>Configure firewall (Shorewall) for network security.</li>
+    <li>Finally, set up and secure MySQL for database operations.</li>
+  </ol>
+
+<!-- ############################################################-->
+
+ <h2>Simulating Server Environment with QEMU/KVM on Debian</h2>
+
+  <h2>Step 1: Install QEMU</h2>
+  <h3>Update Your Package List:</h3>
+  <pre><code>sudo apt update</code></pre>
+  
+  <h3>Install QEMU and Required Packages:</h3>
+  <pre><code>sudo apt install qemu qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils virtinst virt-manager</code></pre>
+  <p>Explanation:</p>
+  <ul>
+    <li><code>qemu</code>: The QEMU emulator itself.</li>
+    <li><code>qemu-kvm</code>: Provides hardware-assisted virtualization support.</li>
+    <li><code>libvirt-daemon-system</code>: Required for managing virtualization on Debian.</li>
+    <li><code>libvirt-clients</code>: Command-line utilities for managing virtual machines.</li>
+    <li><code>bridge-utils</code>: Utilities for configuring network bridges.</li>
+    <li><code>virtinst</code>: Provides tools for creating virtual machines.</li>
+    <li><code>virt-manager</code>: A graphical user interface for managing virtual machines.</li>
+  </ul>
+
+  <h2>Step 2: Download a Debian ISO Image</h2>
+  <p>If you haven't already downloaded a Debian ISO image, you'll need this to install Debian within the QEMU environment.</p>
+
+  <h2>Step 3: Create a Virtual Machine with QEMU</h2>
+  <h3>Create a Disk Image for Debian:</h3>
+  <pre><code>qemu-img create -f qcow2 debian.qcow2 20G</code></pre>
+  <p>This command creates a 20GB QCOW2 format disk image named <code>debian.qcow2</code>.</p>
+
+  <h3>Install Debian on the Virtual Machine:</h3>
+  <pre><code>sudo qemu-system-x86_64 -m 2048 -boot d -drive file=debian.qcow2,format=qcow2 -cdrom debian.iso -enable-kvm</code></pre>
+  <p>Explanation:</p>
+  <ul>
+    <li><code>-m 2048</code>: Allocates 2048MB (2GB) of RAM to the virtual machine. Adjust as necessary based on your system's resources.</li>
+    <li><code>-boot d</code>: Specifies booting from the CD-ROM drive (installation media).</li>
+    <li><code>-drive file=debian.qcow2,format=qcow2</code>: Specifies the disk image file and its format (QCOW2).</li>
+    <li><code>-cdrom debian.iso</code>: Specifies the Debian ISO image as the installation media.</li>
+    <li><code>-enable-kvm</code>: Enables hardware-assisted virtualization if your CPU supports it, improving performance.</li>
+  </ul>
+
+  <h3>Follow the Debian Installation Process:</h3>
+  <p>Proceed with the Debian installation process as you would on a physical machine. Install the base system and any additional packages you need.</p>
+
+  <h2>Step 4: Configure the Virtual Machine</h2>
+  <h3>Update and Install Required Packages:</h3>
+  <pre><code>sudo apt update</code></pre>
+  <pre><code>sudo apt upgrade</code></pre>
+  <p>Install necessary packages like Nginx, PHP, MySQL/MariaDB, etc., as per your requirements.</p>
+
+  <h3>Configure Networking:</h3>
+  <p>By default, QEMU sets up a NAT network for your virtual machines. You can configure networking further using virt-manager or by editing QEMU network configuration files (<code>/etc/libvirt/qemu/networks/default.xml</code>).</p>
+
+  <h3>Configure Services (Nginx, PHP, MySQL):</h3>
+  <p>Edit configuration files (<code>/etc/nginx/nginx.conf</code>, <code>/etc/php/7.4/fpm/php.ini</code>, etc.) to set up your desired server environment.</p>
+  <p>Configure Nginx to serve web pages, PHP to execute scripts, and MySQL/MariaDB for database operations.</p>
+
+  <h2>Step 5: Simulate Server Scenarios</h2>
+  <h3>Start Services:</h3>
+  <pre><code>sudo systemctl start nginx</code></pre>
+  <pre><code>sudo systemctl start php7.4-fpm</code></pre>
+  <pre><code>sudo systemctl start mysql</code></pre>
+
+  <h3>Test Configuration:</h3>
+  <ul>
+    <li>Access Nginx’s default page from your host machine’s web browser using the IP address of your virtual machine.</li>
+    <li>Test PHP scripts to ensure they execute correctly.</li>
+    <li>Verify MySQL/MariaDB connectivity and functionality.</li>
+  </ul>
+
+  <h2>Step 6: Advanced Configuration (Optional)</h2>
+  <h3>Snapshot and Restore:</h3>
+  <p>Use virt-manager or QEMU command-line tools to create snapshots of your virtual machine state. This allows you to revert back to a previous state if you make changes that you want to discard later.</p>
+
+  <h3>Networking and Firewall Rules:</h3>
+  <p>Practice setting up firewall rules using iptables or ufw. Configure QEMU’s network settings to simulate different network topologies or scenarios.</p>
+
+  <h2>Step 7: Shutdown and Cleanup</h2>
+  <h3>Shutdown the Virtual Machine:</h3>
+  <pre><code>sudo systemctl poweroff</code></pre>
+
+  <h3>Cleanup:</h3>
+  <p>Delete unnecessary virtual machine images or snapshots. Optionally uninstall packages or revert configurations if needed.</p>
+  
+<!-- ############################################################-->
+
+  <h2>Setting up SSL with Nginx</h2>
+  <ol>
+    <li>Install Required Packages:
+      <pre><code>sudo apt update<br>sudo apt install nginx openssl</code></pre></li>
+    <li>Create SSL Directory:
+      <pre><code>sudo mkdir /etc/nginx/ssl/</code></pre></li>
+    <li>Generate Self-Signed Certificate:
+      <pre><code>sudo openssl req -x509 -nodes -sha256 -days 365 -newkey rsa:2048 -keyout /etc/nginx/ssl/nginx.key -out /etc/nginx/ssl/nginx.crt</code></pre>
+      Follow the prompts to fill in the certificate details.</li>
+    <li>Generate DH Parameters:
+      <pre><code>sudo openssl dhparam -out /etc/nginx/ssl/dhparam.pem 4096</code></pre>
+      This step generates stronger DH parameters which may take some time.</li>
+    <li>Configure Nginx:
+      <pre><code>sudo nano /etc/nginx/sites-enabled/default</code></pre>
+      Example configuration:
+      <pre><code>&lt;server&gt;
+          listen 80;
+          listen 443 ssl;
+          server_name example.com www.example.com;
+      
+          # force https-redirects
+          if ($scheme = http) {
+              return 301 https://$server_name$request_uri;
+          }
+      
+          ### SSL Config
+          ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+          ssl_ciphers 'EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH';
+          ssl_prefer_server_ciphers on;
+          ssl_dhparam /etc/nginx/ssl/dhparam.pem;
+          ssl_certificate /etc/nginx/ssl/nginx.crt;
+          ssl_certificate_key /etc/nginx/ssl/nginx.key;
+      
+          client_max_body_size 51M;
+          client_header_buffer_size 2048k;
+      
+          # Secure NGINX from Clickjacking attack
+          add_header X-Frame-Options "deny";
+          add_header X-Content-Type-Options nosniff;
+          add_header X-XSS-Protection "1; mode=block";
+      
+          # other configurations...
+      &lt;/server&gt;</code></pre>
+    </li>
+    <li>Reload Nginx:
+      <pre><code>sudo systemctl reload nginx</code></pre></li>
+  </ol>
+
+<!-- ############################################################-->
+
+  <h2>Configuring Nginx to Execute Embedded PHP in HTML Files</h2>
+  <ol>
+    <li>Edit PHP Configuration:
+      <pre><code>nano /etc/php/7.4/fpm/pool.d/www.conf</code></pre>
+      Add or modify the `security.limit_extensions` line:
+      <pre><code>security.limit_extensions = .php .html .htm</code></pre></li>
+    <li>Configure Nginx:
+      <pre><code>nano /etc/nginx/sites-enabled/server.conf</code></pre>
+      Example configuration:
+      <pre><code>location ~ [^/]\.php|.html(/|$) {
+          fastcgi_split_path_info ^(.+?\.php)(/.*)$;
+          fastcgi_intercept_errors on;
+      
+          # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
+          if (!-f $document_root$fastcgi_script_name) { return 404; }
+      
+          # Secure NGINX from Clickjacking attack
+          add_header X-Frame-Options "deny";
+          add_header X-Content-Type-Options nosniff;
+          add_header X-XSS-Protection "1; mode=block";
+      
+          include fastcgi_params;
+          fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+          fastcgi_pass unix:/var/run/php/php7.4-fpm.sock; # Adjust to match your PHP-FPM version/socket
+      }</code></pre>
+    </li>
+    <li>Reload Nginx and PHP-FPM:
+      <pre><code>sudo systemctl reload nginx php7.4-fpm</code></pre></li>
+  </ol>
+  
+  <!-- ############################################################-->
+
+  <h2>Configuring mSMTP for Sending Emails from PHP</h2>
+  <ol>
+    <li>Install mSMTP:
+      <pre><code>sudo apt-get install msmtp ca-certificates</code></pre></li>
+    <li>Configure mSMTP:
+      <pre><code>nano ~/.msmtprc</code></pre>
+      Example configuration:
+      <pre><code>account default
+      host smtp.gmail.com
+      from email@youremailhost.com
+      auth on
+      port 587
+      user email@gmail.com
+      password MySecret
+      syslog LOG_MAIL
+      logfile /var/log/msmtp/msmtp.log
+      tls on
+      tls_starttls on
+      tls_trust_file /etc/ssl/certs/ca-certificates.crt</code></pre>
+    </li>
+    <li>Test Email Sending:
+      <pre><code>echo -e "Subject: Test Mail\r\n\r\nThis is a test mail" | msmtp --debug --from=default -t your_account@gmail.com</code></pre></li>
+  </ol>
+
+  <!-- ############################################################-->
+  
+<h2>Configuring Shorewall Firewall</h2>
+  <ol>
+    <li>Install Shorewall:
+      <pre><code>sudo apt-get install shorewall</code></pre></li>
+    <li>Edit Shorewall Configuration:
+      <pre><code>sudo nano /etc/default/shorewall</code></pre>
+      Set `startup` to `1`:
+      <pre><code>startup = 1</code></pre></li>
+    <li>Configure IP Forwarding:
+      <pre><code>sudo nano /etc/shorewall/shorewall.conf</code></pre>
+      Ensure `IP_FORWARDING` is set to `On`:
+      <pre><code>IP_FORWARDING=On</code></pre></li>
+    <li>Edit Shorewall Interfaces:
+      <pre><code>sudo nano /etc/shorewall/interfaces</code></pre>
+      Example configuration:
+      <pre><code>
+      #ZONE   INTERFACE       BROADCAST    OPTIONS
+      net      eth0            detect      tcpflags,logmartians,nosmurfs
+      #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
+      </code></pre></li>
+    <li>Edit Shorewall Policies:
+      <pre><code>sudo nano /etc/shorewall/policy</code></pre>
+      Example configuration:
+      <pre><code>
+      #SOURCE   DEST  POLICY  LOG LEVEL  LIMIT:BURST
+      fw             all          ACCEPT
+      net            all          DROP            info
+      
+      #The FOLLOWING POLICY MUST BE LAST
+      all         all             REJECT          info
+      #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE
+      </code></pre></li>
+    <li>Edit Shorewall Zones:
+      <pre><code>sudo nano /etc/shorewall/zones</code></pre>
+      Example configuration:
+      <pre><code>
+      #ZONE   TYPE    OPTIONS                 IN                      OUT
+      #                                       OPTIONS                 OPTIONS
+      fw      firewall
+      net     ipv4
+      </code></pre></li>
+    <li>Edit Shorewall Rules:
+      <pre><code>sudo nano /etc/shorewall/rules</code></pre>
+      Example configuration:
+      <pre><code>
+      #ACTION SOURCE  DEST            PROTO   DEST    SOURCE  ORIGINAL
+      #                                       PORT    PORT(S) DEST
+      ACCEPT  net     $FW:192.168.1.123 tcp   80,443
+      Ping(DROP)      net               $FW
+      #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
+      </code></pre></li>
+    <li>Check Shorewall Configuration:
+      <pre><code>sudo shorewall check</code></pre></li>
+    <li>Restart Shorewall:
+      <pre><code>sudo systemctl restart shorewall</code></pre></li>
+    <li>Enable Shorewall at Startup:
+      <pre><code>sudo systemctl enable shorewall</code></pre></li>
+  </ol>
+  
+  <!-- ############################################################-->
+  
+    <h2>Configuring MySQL Database</h2>
+  <ol>
+    <li>Install MySQL Server:
+      <pre><code>sudo apt-get install mysql-server</code></pre></li>
+    <li>Secure MySQL Installation:
+      <pre><code>sudo mysql_secure_installation</code></pre>
+      Follow the prompts to secure MySQL installation.</li>
+    <li>Create MySQL Database and User:
+      <pre><code>mysql -u root -p
+
+</body>
+</html>

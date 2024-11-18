@@ -1,0 +1,49 @@
+Script comment headers
+
+#######################################################################
+# File Name     : filename.sh
+# Description   : Brief description of the file's purpose.
+# Dependencies  : Lists dependant files or modules.
+# Usage         : Instructions or notes on how to use the file.
+# Author        : Name of the author or creator.
+# License       : The license under which the code is released.
+# Invoked By    : List of other files/modules that call this file.
+# Permissions   : Permissions or access rights needed for using the code.
+# Parameters    : Details about the parameters accepted.
+# Company       : Name of the company or organization.
+# URL           : URL link to additional documentation or resources.
+# Inspired by   : Acknowledges the source of inspiration for the script
+#
+# Version       : Version - Date - Description of change.
+# Creation Date : Date when the file was created.
+# Edit History  : Date - Description of change.
+#######################################################################
+#######################################################################
+# File Name    :
+# Description  :
+# Dependencies :
+# Usage        : • Make the script executable with:
+#                [sudo] chmod +x
+#                • Run the script with [no arguments]:
+#                [sudo] bash
+# Author       : Me and the bois
+# License      : Free of charge, no warranty
+#######################################################################
+#######################################################################
+# File Name     :
+# Description   :
+# Dependencies  :
+# Usage         :
+# Author        :
+# License       :
+# Invoked By    :
+# Permissions   :
+# Parameters    :
+# Company       :
+# URL           :
+# Inspired by   :
+#
+# Version       :
+# Creation Date :
+# Edit History  :
+#######################################################################
