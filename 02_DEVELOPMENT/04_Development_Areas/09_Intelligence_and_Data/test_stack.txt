@@ -1,0 +1,25 @@
+AI Programming Stacks
+
+Python-based AI Stack:
+
+Programming Language: Python
+Framework/Libraries:
+Deep Learning: TensorFlow, PyTorch, Keras
+Machine Learning: Scikit-learn, XGBoost
+Tools:
+Package Manager: pip
+Environment Management: virtualenv, conda
+Deployment: Podman, Kubernetes
+
+R-based AI Stack:
+
+Programming Language: R
+Framework/Libraries:
+Machine Learning: caret, randomForest
+Statistical Computing: ggplot2, dplyr
+Tools:
+Package Manager: CRAN (Comprehensive R Archive Network)
+Environment Management: RStudio, R Shiny
+Deployment: Shiny Server, Podman
+
+Java-based AI Stack:

@@ -1,0 +1,31 @@
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+    }
+    table {
+      width: calc(100% - 1mm);
+      margin: 0.5mm;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 6px;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    code {
+      background-color: #f8f8f8;
+      padding: 3px;
+      border: 1px solid #ddd;
+      font-size: 13px;
+      margin: 0;
+      display: inline-block;
+    }
+    ul {
+      margin: 0;
+      padding-left: 20px;
+    }

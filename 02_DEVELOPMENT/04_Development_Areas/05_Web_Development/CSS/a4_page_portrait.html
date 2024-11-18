@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A4 Page Size Example</title>
+<style>
+/* General reset for consistent margins, paddings, and box-sizing across elements */
+ * {
+     margin: 0;
+     padding: 0;
+     box-sizing: border-box;
+}
+/* Define A4 size and zero margins for the printed page */
+ @page {
+     size: A4;
+     margin: 0;
+}
+/* Ensure HTML and body elements cover the entire A4 page size */
+ html, body {
+     width: 210mm;
+    /* A4 width */
+     height: 297mm;
+    /* A4 height */
+     margin-left:auto;
+     margin-right:auto;
+     padding: 0;
+     display: flex;
+     justify-content: center;
+     align-items: center;
+}
+/* Style the content container */
+ .content {
+     width: 80%;
+    /* Adjust the width as needed */
+     height: 80%;
+    /* Adjust the height as needed */
+     padding: 20px;
+     box-sizing: border-box;
+     font-family: Arial, sans-serif;
+    /* Set font family */
+     background-color: #f0f0f0;
+    /* Light gray background color */
+}
+</style>
+</head>
+<body>
+    <div class="content">
+        <!-- Your content goes here -->
+        <p>This is an example content for an A4 sized HTML page in portrait orientation.</p>
+    </div>
+</body>
+</html>

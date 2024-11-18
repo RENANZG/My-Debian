@@ -1,0 +1,101 @@
+# My Document
+
+<p style="text-align: left;">Left-aligned paragraph</p>
+<p style="text-align: center;">Centered paragraph</p>
+<p style="text-align: right;">Right-aligned paragraph</p>
+
+<table>
+    <tr>
+        <th style="text-align: center;">Centered header</th>
+        <th style="vertical-align: top">Centered header</th>
+        <th style="text-align: center;">Centered header</th>
+    </tr>
+</table>
+
+###################################################################
+******** <td style="text-align: top;" style="width: 50%">
+<td style="text-align: top; width: 50%">
+
+<td style="vertical-align: top;" style="width: 50%">
+<th style="vertical-align: top">
+
+<p align="left">
+<p align="center">
+<p align="right">
+
+<th align="center">
+
+<td valign="top"
+<td valign="top">
+
+###################################################################
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .text-center {
+            text-align: center;
+        }
+        .text-left {
+            text-align: left;
+        }
+        .text-right {
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+
+<p class="text-center">Centered paragraph</p>
+<p class="text-center">Centered paragraph</p>
+<p class="text-center">Centered paragraph</p>
+<p class="text-left">Left-aligned paragraph</p>
+
+<table>
+    <tr>
+        <th class="text-center">Centered header</th>
+        <th class="text-center">Centered header</th>
+        <th class="text-center">Centered header</th>
+    </tr>
+</table>
+
+<p class="text-right">Right-aligned paragraph</p>
+<p class="text-left">Left-aligned paragraph</p>
+<p class="text-center">Centered paragraph</p>
+
+</body>
+</html>
+
+###################################################################
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<p style="text-align: center;">Centered paragraph</p>
+<p style="text-align: center;">Centered paragraph</p>
+<p style="text-align: center;">Centered paragraph</p>
+<p style="text-align: left;">Left-aligned paragraph</p>
+
+<table>
+    <tr>
+        <th style="text-align: center;">Centered header</th>
+        <th style="text-align: center;">Centered header</th>
+        <th style="text-align: center;">Centered header</th>
+    </tr>
+</table>
+
+<p style="text-align: right;">Right-aligned paragraph</p>
+<p style="text-align: left;">Left-aligned paragraph</p>
+<p style="text-align: center;">Centered paragraph</p>
+
+</body>
+</html>
+

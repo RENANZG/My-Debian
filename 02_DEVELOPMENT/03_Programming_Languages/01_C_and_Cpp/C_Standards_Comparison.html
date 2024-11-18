@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Programming Language Standards Comparison</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 10px;
+            line-height: 1.4;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            table-layout: fixed;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 4px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        th.custom {
+            width: 100px; /* Adjust this class value as needed */
+        }
+        pre {
+            background-color: #f9f9f9;
+            padding: 4px;
+            border: 1px solid #ccc;
+            font-size: 10px;
+            margin: 0;
+            max-height: 300px; /* Adjust based on your preference */
+            overflow: hidden;
+            white-space: pre-wrap; /* Allows text to wrap */
+            word-wrap: break-word; /* Breaks long words */
+        }
+        h1, h2 {
+            font-size: 18px;
+        }
+        ul {
+            list-style-type: disc;
+            font-size: 12px;
+            margin: 10px;
+            padding: 5px;
+        }
+        ul li {
+            font-size: 12px;
+            margin: 5px;
+        }
+        caption {
+            font-weight: bold;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+
+<table>
+    <caption>Comparison of C Programming Language Standards and Their Adoption in the Linux Kernel</caption>
+    <thead>
+        <tr>
+            <th>Feature</th>
+            <th>K&R C</th>
+            <th>C89/ANSI-C</th>
+            <th>C90</th>
+            <th>C95</th>
+            <th>C99</th>
+            <th>C11</th>
+            <th>C17/C18</th>
+            <th>C23 (Draft)</th>
+            <th>GNU C</th>
+            <th>Linux Kernel</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Standardized</td>
+            <td>No</td>
+            <td>Yes (ANSI)</td>
+            <td>Yes (ISO)</td>
+            <td>Yes (ISO)</td>
+            <td>Yes (ISO)</td>
+            <td>Yes (ISO)</td>
+            <td>Yes (ISO)</td>
+            <td>Draft</td>
+            <td>Yes</td>
+            <td>C99 extensively; some C11 features; GNU C extensions</td>
+        </tr>
+        <tr>
+            <td>Description</td>
+            <td>Original C language, as defined by Kernighan and Ritchie.</td>
+            <td>First standardized version by ANSI in 1989, known as C89 or ANSI-C.</td>
+            <td>International version of C89, published by ISO in 1990, known as C90.</td>
+            <td>Technical amendment to C90 in 1995, adding wide character support, known as C95.</td>
+            <td>Major revision in 1999, introducing new features like inline functions and boolean types, known as C99.</td>
+            <td>Update in 2011 adding features like _Generic, _Static_assert, and improved multi-core support, known as C11.</td>
+            <td>Revision in 2017 that fixed defects without adding new features, known as C17 or C18.</td>
+            <td>Upcoming major revision with new features and changes, still in draft stage, known as C23 or C2X.</td>
+            <td>GNU's extension to the C language supported by GCC, includes features beyond the official standards.</td>
+            <td>Primarily uses C99 features; some C11 features; relies heavily on GNU C extensions (e.g., `__attribute__` syntax).</td>
+        </tr>
+        <tr>
+            <td>Inline Functions</td>
+            <td>No</td>
+            <td>No</td>
+            <td>No</td>
+            <td>No</td>
+            <td>Yes</td>
+            <td>Yes</td>
+            <td>Yes</td>
+            <td>Yes</td>
+            <td>Yes</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>Variable-Length Arrays</td>
+            <td>No</td>
+            <td>No</td>
+            <td>No</td>
+            <td>No</td>
+            <td>Yes</td>
+            <td>Yes</td>
+            <td>Yes</td>
+            <td>Yes</td>
+            <td>Yes</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>New Data Types (e.g., long long int)</td>
+            <td>No</td>
+            <td>No</td>
+            <td>No</td>
+            <td>No</td>
+            <td>Yes</td>
+            <td>Yes</td>
+            <td>Yes</td>
+            <td>Yes</td>
+            <td>Yes</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>Support for C++ Style Comments (//)</td>
+            <td>No</td>
+            <td>No</td>
+            <td>No</td>
+            <td>No</td>
+            <td>Yes</td>
+            <td>Yes</td>
+            <td>Yes</td>
+            <td>Yes</td>
+            <td>Yes</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>Designated Initializers</td>
+            <td>No</td>
+            <td>No</td>
+            <td>No</td>
+            <td>No</td>
+            <td>Yes</td>
+            <td>Yes</td>
+            <td>Yes</td>
+            <td>Yes</td>
+            <td>Yes</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>Static Assertions</td>
+            <td>No</td>
+            <td>No</td>
+            <td>No</td>
+            <td>No</td>
+            <td>No</td>
+            <td>Yes</td>
+            <td>Yes</td>
+            <td>Yes</td>
+            <td>Yes</td>
+            <td>Limited use</td>
+        </tr>
+        <tr>
+            <td>Wide Character Support</td>
+            <td>No</td>
+            <td>No</td>
+            <td>No</td>
+            <td>Yes</td>
+            <td>Yes</td>
+            <td>Yes</td>
+            <td>Yes</td>
+            <td>Yes</td>
+            <td>Yes</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>Unicode Support</td>
+            <td>No</td>
+            <td>No</td>
+            <td>No</td>
+            <td>No</td>
+            <td>Limited</td>
+            <td>Limited</td>
+            <td>Improved</td>
+            <td>Enhanced</td>
+            <td>Depends on implementation</td>
+            <td>Depends on implementation</td>
+        </tr>
+        <tr>
+            <td>Compatibility with Modern Hardware</td>
+            <td>Limited</td>
+            <td>Limited</td>
+            <td>Limited</td>
+            <td>Limited</td>
+            <td>Improved</td>
+            <td>Better</td>
+            <td>Best</td>
+            <td>Best</td>
+            <td>Varies</td>
+            <td>High</td>
+        </tr>
+    </tbody>
+</table>
+
+</body>
+</html>

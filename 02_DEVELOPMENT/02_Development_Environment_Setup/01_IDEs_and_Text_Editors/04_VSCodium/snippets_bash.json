@@ -1,0 +1,374 @@
+{
+  "Shell Shebang": {
+    "prefix": "shebang",
+    "body": [
+      "#!/usr/bin/env bash"
+    ],
+    "description": "Shell Shebang"
+  },
+  "Comment Section Header": {
+    "prefix": "header",
+    "body": [
+      "########################################################################",
+      "# Filename     : $1",
+      "# Description  : $2",
+      "# Dependencies : $3",
+      "# Usage        : $4",
+      "# Author       : $5",
+      "# License      : $6",
+      "########################################################################"
+    ],
+    "description": "Comment Section Header"
+  },
+  "Set Options (Error Handling)": {
+    "prefix": "setoptions",
+    "body": [
+      "set -euo pipefail"
+    ],
+    "description": "Set Options (Error Handling)"
+  },
+  "Variable Declaration": {
+    "prefix": "var",
+    "body": [
+      "${1:variable}=${2:value}"
+    ],
+    "description": "Variable Declaration"
+  },
+  "Command Existence Check": {
+    "prefix": "cmdcheck",
+    "body": [
+      "if ! command -v ${1:command} &> /dev/null; then",
+      "\techo \"${2:error_message}\"",
+      "\texit ${3:exit_code}",
+      "fi"
+    ],
+    "description": "Command Existence Check"
+  },
+  "Prompt User Input": {
+    "prefix": "prompt",
+    "body": [
+      "read -rp \"${1:prompt_message}: \" ${2:variable}"
+    ],
+    "description": "Prompt User Input"
+  },
+  "Directory Creation": {
+    "prefix": "mkdir",
+    "body": [
+      "mkdir -p ${1:directory_path}"
+    ],
+    "description": "Directory Creation"
+  },
+  "Download File with Curl": {
+    "prefix": "curl",
+    "body": [
+      "curl -L -o ${1:output_file} ${2:download_url}"
+    ],
+    "description": "Download File with Curl"
+  },
+  "Check if File Exists": {
+    "prefix": "fileexists",
+    "body": [
+      "if [ -e ${1:file_path} ]; then",
+      "\t${2:#file exists}",
+      "fi"
+    ],
+    "description": "Check if File Exists"
+  },
+  "Conditional Execution": {
+    "prefix": "conditional",
+    "body": [
+      "if [[ ${1:condition} ]]; then",
+      "\t${2:#statements}",
+      "fi"
+    ],
+    "description": "Conditional Execution"
+  },
+  "Create Symbolic Link": {
+    "prefix": "symlink",
+    "body": [
+      "ln -sf ${1:target_file} ${2:symlink_path}"
+    ],
+    "description": "Create Symbolic Link"
+  },
+  "Write Script to File": {
+    "prefix": "writescript",
+    "body": [
+      "cat > ${1:output_file} <<EOF",
+      "${2:script_content}",
+      "EOF",
+      "chmod +x ${1:output_file}"
+    ],
+    "description": "Write Script to File"
+  },
+  "Check GNOME Shell Command": {
+    "prefix": "gnomecheck",
+    "body": [
+      "if command -v gnome-shell &> /dev/null; then",
+      "\t${1:#GNOME-specific action}",
+      "fi"
+    ],
+    "description": "Check GNOME Shell Command"
+  },
+  "Exit Script with Message": {
+    "prefix": "exitmsg",
+    "body": [
+      "echo \"${1:error_message}\"",
+      "exit ${2:exit_code}"
+    ],
+    "description": "Exit Script with Message"
+  },
+  "Print Statement": {
+    "prefix": "echo",
+    "body": [
+      "echo \"${1:message}\""
+    ],
+    "description": "Print Statement"
+  },
+  "For Loop": {
+    "prefix": "for",
+    "body": [
+      "for (( ${1:i} = 0; $1 < ${2:length}; $1++ )); do",
+      "\t${3:#statements}",
+      "done"
+    ],
+    "description": "For Loop"
+  },
+  "While Loop": {
+    "prefix": "while",
+    "body": [
+      "while [[ ${1:condition} ]]; do",
+      "\t${2:#statements}",
+      "done"
+    ],
+    "description": "While Loop"
+  },
+  "While Read Loop": {
+    "prefix": "whileread",
+    "body": [
+      "while read -r ${1:variable}; do",
+      "\t${2:#statements}",
+      "done"
+    ],
+    "description": "While Read Loop"
+  "If Statement": {
+    "prefix": "if",
+    "body": [
+      "if [[ ${1:condition} ]]; then",
+      "\t${2:#statements}",
+      "fi"
+    ],
+    "description": "If Statement"
+  },
+  "If-Else Statement": {
+    "prefix": "ifelse",
+    "body": [
+      "if [[ ${1:condition} ]]; then",
+      "\t${2:#statements}",
+      "else",
+      "\t${3:#else statements}",
+      "fi"
+    ],
+    "description": "If-Else Statement"
+  },
+  "Case Statement": {
+    "prefix": "case",
+    "body": [
+      "case ${1:variable} in",
+      "\t${2:pattern1})",
+      "\t\t${3:#statements}",
+      "\t\t;;",
+      "\t${4:pattern2})",
+      "\t\t${5:#statements}",
+      "\t\t;;",
+      "esac"
+    ],
+    "description": "Case Statement"
+  },
+  "Function Declaration": {
+    "prefix": "function",
+    "body": [
+      "function ${1:name}() {",
+      "\t${2:#statements}",
+      "}"
+    ],
+    "description": "Function Declaration"
+  },
+  "Variable Declaration": {
+    "prefix": "var",
+    "body": [
+      "${1:name}=${2:value}"
+    ],
+    "description": "Variable Declaration"
+  },
+  "Array Declaration": {
+    "prefix": "array",
+    "body": [
+      "${1:name}=( ${2:element1} ${3:element2} )"
+    ],
+    "description": "Array Declaration"
+  },
+  "Read Input": {
+    "prefix": "read",
+    "body": [
+      "read -p \"${1:Prompt message}: \" ${2:variable}"
+    ],
+    "description": "Read Input"
+  },
+  "Math Calculation": {
+    "prefix": "calculation",
+    "body": [
+      "result=$(( ${1:num1} + ${2:num2} ))"
+    ],
+    "description": "Math Calculation"
+  },
+  "Substring Extraction": {
+    "prefix": "substring",
+    "body": [
+      "${1:string:offset:length}"
+    ],
+    "description": "Substring Extraction"
+  },
+  "File Existence Check": {
+    "prefix": "filecheck",
+    "body": [
+      "if [[ -e ${1:file} ]]; then",
+      "\t${2:#file exists}",
+      "fi"
+    ],
+    "description": "File Existence Check"
+  },
+  "Directory Existence Check": {
+    "prefix": "dircheck",
+    "body": [
+      "if [[ -d ${1:directory} ]]; then",
+      "\t${2:#directory exists}",
+      "fi"
+    ],
+    "description": "Directory Existence Check"
+  },
+  "Command Execution Check": {
+    "prefix": "commandcheck",
+    "body": [
+      "if command -v ${1:command} &>/dev/null; then",
+      "\t${2:#command exists}",
+      "fi"
+    ],
+    "description": "Command Execution Check"
+  },
+  "String Comparison": {
+    "prefix": "strcompare",
+    "body": [
+      "if [[ ${1:string1} == ${2:string2} ]]; then",
+      "\t${3:#statements}",
+      "fi"
+    ],
+    "description": "String Comparison"
+  },
+  "Logical AND": {
+    "prefix": "logicaland",
+    "body": [
+      "if [[ ${1:condition1} && ${2:condition2} ]]; then",
+      "\t${3:#statements}",
+      "fi"
+    ],
+    "description": "Logical AND"
+  },
+  "Logical OR": {
+    "prefix": "logicalor",
+    "body": [
+      "if [[ ${1:condition1} || ${2:condition2} ]]; then",
+      "\t${3:#statements}",
+      "fi"
+    ],
+    "description": "Logical OR"
+  },
+  "String Length": {
+    "prefix": "strlen",
+    "body": [
+      "${#1:string}"
+    ],
+    "description": "String Length"
+  },
+  "Array Length": {
+    "prefix": "arraylen",
+    "body": [
+      "${#1[@]}"
+    ],
+    "description": "Array Length"
+  },
+  "Check if String is Empty": {
+    "prefix": "strempty",
+    "body": [
+      "if [[ -z ${1:string} ]]; then",
+      "\t${2:#string is empty}",
+      "fi"
+    ],
+    "description": "Check if String is Empty"
+  },
+  "Check if String is Not Empty": {
+    "prefix": "strnotempty",
+    "body": [
+      "if [[ -n ${1:string} ]]; then",
+      "\t${2:#string is not empty}",
+      "fi"
+    ],
+    "description": "Check if String is Not Empty"
+  },
+  "Check if File is Readable": {
+    "prefix": "filereadable",
+    "body": [
+      "if [[ -r ${1:file} ]]; then",
+      "\t${2:#file is readable}",
+      "fi"
+    ],
+    "description": "Check if File is Readable"
+  },
+  "Check if Directory is Writable": {
+    "prefix": "dirwritable",
+    "body": [
+      "if [[ -w ${1:directory} ]]; then",
+      "\t${2:#directory is writable}",
+      "fi"
+    ],
+    "description": "Check if Directory is Writable"
+  },
+  "Check if Command Succeeded": {
+    "prefix": "cmdsuccess",
+    "body": [
+      "if [[ $? -eq 0 ]]; then",
+      "\t${1:#command succeeded}",
+      "fi"
+    ],
+    "description": "Check if Command Succeeded"
+  },
+  "Loop Over Files in Directory": {
+    "prefix": "loopfiles",
+    "body": [
+      "for file in ${1:directory}/*; do",
+      "\t${2:#statements using $file}",
+      "done"
+    ],
+    "description": "Loop Over Files in Directory"
+  },
+  "Loop Over Array Elements": {
+    "prefix": "looparray",
+    "body": [
+      "for element in \"${1:array[@]}\"; do",
+      "\t${2:#statements using $element}",
+      "done"
+    ],
+    "description": "Loop Over Array Elements"
+  },
+    "Function to Securely Prompt for Password": {
+    "prefix": "promptpassword",
+    "body": [
+      "function prompt_password() {",
+      "\tlocal password=\"\"",
+      "\techo -n \"Enter password for $1: \"",
+      "\tread -s password",
+      "\techo",
+      "}"
+    ],
+    "description": "Function to Securely Prompt for Password"
+  
+}

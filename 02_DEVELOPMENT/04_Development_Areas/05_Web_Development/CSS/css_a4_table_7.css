@@ -1,0 +1,46 @@
+        body {
+            font-family: Arial, sans-serif;
+            margin: 10px;
+            line-height: 1.4;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            table-layout: fixed;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 4px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        th.custom {
+            width: 100px; /* Adjust this class value as needed */
+        }
+        pre {
+            background-color: #f9f9f9;
+            padding: 4px;
+            border: 1px solid #ccc;
+            font-size: 10px;
+            margin: 0;
+            max-height: 300px; /* Adjust based on your preference */
+            overflow: hidden;
+            white-space: pre-wrap; /* Allows text to wrap */
+            word-wrap: break-word; /* Breaks long words */
+        }
+        h1, h2 {
+            font-size: 18px;
+        }
+        ul {
+            list-style-type: none;
+            font-size: 12px;
+            padding: 0;
+        }
+        ul li {
+            margin-bottom: 10px;
+            font-size: 12px;
+        }

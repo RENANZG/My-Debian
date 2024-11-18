@@ -1,0 +1,85 @@
+ external css:
+ 
+ <link rel="stylesheet" href="css/model.css">
+    
+#######################################################
+  
+  pre {
+  background-color: #cccccc;
+  padding: 1px;
+  border-radius: 3px;
+  overflow: auto;
+  }
+  code {
+  background-color: #cccccc;
+  padding: 1px;
+  border-radius: 3px;
+  }
+  pre > code {
+  background-color: #cccccc;
+  padding: 1px;
+  border-radius: 3px;
+  display: block;
+  overflow: auto;
+  position:relative;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  }
+  
+#######################################################  
+
+  pre {
+    display: block;
+    width: auto;
+    max-height: 600px;
+    overflow: auto;
+    background-color: #eee;
+    border-radius: 10px;
+    border: 1px solid;
+    border-color: var(--cassiopeia-color-primary, #111 );
+    scrollbar-color: #ccc transparent;
+    margin: 20px 40px;
+    padding: 30px;
+    word-wrap: normal;
+}
+pre > code {
+    font-size: 1.0rem;
+    text-indent: 0;
+    color: #111;
+    white-space: inherit;
+    margin: 20px 20px;
+}
+
+#######################################################
+
+code {
+  font: 12px Monaco,"Courier New","DejaVu Sans Mono","Bitstream Vera Sans Mono",monospace;
+  color: #52595d;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+  -moz-background-clip: padding;
+  -webkit-background-clip: padding-box;
+  background-clip: padding-box;
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+  padding: 0px 3px;
+  display: inline-block;
+  margin: 0px;
+}
+pre {
+  border: 1px solid #cacaca;
+  line-height: 1.2em;
+  font: 12px Monaco,"Courier New","DejaVu Sans Mono","Bitstream Vera Sans Mono",monospace;
+  padding: 10px;
+  overflow:auto;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+  -moz-background-clip: padding;
+  -webkit-background-clip: padding-box;
+  background-clip: padding-box;
+  background-color: #FAFAFB;
+  color: #393939;
+  margin: 0px;
+}

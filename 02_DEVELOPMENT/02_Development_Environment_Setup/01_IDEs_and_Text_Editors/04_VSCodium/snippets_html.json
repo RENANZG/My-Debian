@@ -1,0 +1,131 @@
+{
+  "HTML Basic Structure": {
+    "prefix": "html5",
+    "body": [
+      "<!DOCTYPE html>",
+      "<html lang=\"en\">",
+      "<head>",
+      "    <meta charset=\"UTF-8\">",
+      "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">",
+      "    <title>${1:Document}</title>",
+      "</head>",
+      "<body>",
+      "    ${0}",
+      "</body>",
+      "</html>"
+    ],
+    "description": "Basic HTML5 structure"
+  },
+
+  "External CSS Link": {
+    "prefix": "cssLink",
+    "body": ["<link rel=\"stylesheet\" href=\"$1\">"],
+    "description": "External CSS link"
+  },
+
+  "External JS Script": {
+    "prefix": "jsScript",
+    "body": ["<script src=\"$1\"></script>"],
+    "description": "External JavaScript script"
+  },
+
+  "Basic Form": {
+    "prefix": "basicForm",
+    "body": [
+      "<form>",
+      "    <input type=\"text\" name=\"${1:name}\" placeholder=\"${2:Placeholder}\">",
+      "    <input type=\"submit\" value=\"${3:Submit}\">",
+      "</form>"
+    ],
+    "description": "Basic Form"
+  },
+
+  "Div with ID and Class": {
+    "prefix": "divIdClass",
+    "body": ["<div id=\"${1:id}\" class=\"${2:class}\">${3}</div>"],
+    "description": "Div with ID and Class"
+  },
+
+  "Ordered List": {
+    "prefix": "olList",
+    "body": [
+      "<ol>",
+      "    <li>${1:item1}</li>",
+      "    <li>${2:item2}</li>",
+      "    <li>${3:item3}</li>",
+      "</ol>"
+    ],
+    "description": "Ordered List"
+  },
+
+  "Table with Rows and Columns": {
+    "prefix": "tableRC",
+    "body": [
+      "<table>",
+      "    <tr>",
+      "        <td>${1:cell1}</td>",
+      "        <td>${2:cell2}</td>",
+      "        <td>${3:cell3}</td>",
+      "    </tr>",
+      "    <tr>",
+      "        <td>${4:cell4}</td>",
+      "        <td>${5:cell5}</td>",
+      "        <td>${6:cell6}</td>",
+      "    </tr>",
+      "    <tr>",
+      "        <td>${7:cell7}</td>",
+      "        <td>${8:cell8}</td>",
+      "        <td>${9:cell9}</td>",
+      "    </tr>",
+      "</table>"
+    ],
+    "description": "Table with Rows and Columns"
+  },
+
+  "Description List": {
+    "prefix": "dlList",
+    "body": [
+      "<dl>",
+      "    <dt>${1:Term1}</dt>",
+      "    <dd>${2:Description1}</dd>",
+      "    <dt>${3:Term2}</dt>",
+      "    <dd>${4:Description2}</dd>",
+      "    <dt>${5:Term3}</dt>",
+      "    <dd>${6:Description3}</dd>",
+      "</dl>"
+    ],
+    "description": "Description List with terms and descriptions"
+  },
+
+  "Image with alt text": {
+    "prefix": "imgAlt",
+    "body": ["<img src=\"$1\" alt=\"$2\">"],
+    "description": "Image with alternate text"
+  },
+
+  "Insert HTML Link": {
+    "prefix": "htmlLink",
+    "body": ["<a href=\"$1\">$2</a>"],
+    "description": "Insert HTML link"
+  },
+
+ "Clipboard Copy Button": {
+    "prefix": "clipboardButton",
+    "body": [
+      "<div id=\"$1\" class=\"$2\">",
+      "    <pre><code><span>$3</span></code></pre>",
+      "    <button onclick=\"navigator.clipboard.writeText('$4')\">Copy</button>",
+      "</div>"
+    ],
+    "description": "Div with clipboard copy button"
+  }
+}
+
+    "HTML Encode Example": {
+        "prefix": "htmlencode",
+        "body": [
+            "5 &lt; 10 &amp; &quot;Hello&quot;"
+        ],
+        "description": "Insert encoded example text for HTML"
+    }
+}

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web Development Stacks Comparison</title>
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Web Development Stacks Comparison</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Features</th>
+      <th>LAMP</th>
+      <th>WAMP</th>
+      <th>MAMP</th>
+      <th>MEAN</th>
+      <th>WERN</th>
+      <th>MEVN</th>
+      <th>Django</th>
+      <th>JAMstack</th>
+      <th>SMACK</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Use Case</td>
+      <td>Traditional web apps, dynamic content, moderate scalability</td>
+      <td>Windows-based development, local development, PHP focus</td>
+      <td>MacOS development, PHP/Python/Perl support</td>
+      <td>Modern full-stack development, scalable applications</td>
+      <td>Windows-based development, React frontend focus</td>
+      <td>Modern full-stack development, Vue.js frontend focus</td>
+      <td>Python-based development, robust backend, rapid development</td>
+      <td>Static websites, high performance, security, scalability</td>
+      <td>Real-time analytics, big data applications</td>
+    </tr>
+    <tr>
+      <td>Frontend Basics</td>
+      <td>HTML, CSS, JavaScript</td>
+      <td>HTML, CSS, JavaScript</td>
+      <td>HTML, CSS, JavaScript</td>
+      <td>HTML, CSS, JavaScript</td>
+      <td>HTML, CSS, JavaScript</td>
+      <td>HTML, CSS, JavaScript</td>
+      <td>HTML, CSS, JavaScript</td>
+      <td>HTML, CSS, JavaScript</td>
+      <td>HTML, CSS, JavaScript</td>
+    </tr>
+    <tr>
+      <td>Frontend Frameworks</td>
+      <td>None specified (can integrate with various frameworks)</td>
+      <td>Same as LAMP</td>
+      <td>Same as LAMP and WAMP</td>
+      <td>Angular</td>
+      <td>React</td>
+      <td>Vue.js</td>
+      <td>Django (Python)</td>
+      <td>Gatsby, Next.js</td>
+      <td>None specified (custom front-end or integration with analytics libraries)</td>
+    </tr>
+    <tr>
+      <td>IDE/Editors</td>
+      <td>Visual Studio Code, Sublime Text, PhpStorm</td>
+      <td>Visual Studio Code, Sublime Text, PhpStorm</td>
+      <td>Visual Studio Code, Sublime Text, PhpStorm</td>
+      <td>Visual Studio Code, WebStorm</td>
+      <td>Visual Studio Code, Sublime Text</td>
+      <td>Visual Studio Code, WebStorm</td>
+      <td>PyCharm, Visual Studio Code</td>
+      <td>Visual Studio Code, Sublime Text</td>
+      <td>Visual Studio Code, IntelliJ IDEA</td>
+    </tr>
+    <tr>
+      <td>Relation Databases</td>
+      <td>MySQL, MariaDB</td>
+      <td>MySQL, MariaDB</td>
+      <td>MySQL, MariaDB</td>
+      <td>MongoDB</td>
+      <td>MySQL, MariaDB</td>
+      <td>MongoDB</td>
+      <td>SQLite, MySQL, PostgreSQL</td>
+      <td>Various, typically file-based or Headless CMS</td>
+      <td>Apache Cassandra, Hadoop, HBase</td>
+    </tr>
+    <tr>
+      <td>NoSQL DB</td>
+      <td>NoSQL options can be integrated</td>
+      <td>NoSQL options can be integrated</td>
+      <td>NoSQL options can be integrated</td>
+      <td>NoSQL (MongoDB)</td>
+      <td>NoSQL options can be integrated</td>
+      <td>NoSQL (MongoDB)</td>
+      <td>NoSQL options can be integrated</td>
+      <td>Various, typically file-based or Headless CMS</td>
+      <td>Apache Kafka</td>
+    </tr>
+    <tr>
+      <td>Backend</td>
+      <td>Apache, PHP, Perl, Python</td>
+      <td>Apache, PHP</td>
+      <td>Apache, PHP, Python, Perl</td>
+      <td>Express.js, Node.js</td>
+      <td>Express.js, Node.js</td>
+      <td>Express.js, Node.js</td>
+      <td>Django (Python)</td>
+      <td>Serverless functions, Node.js (for dynamic functionality)</td>
+      <td>Spark, Mesos, Akka</td>
+    </tr>
+    <tr>
+      <td>Core Logic</td>
+      <td>Server-side scripting, business logic</td>
+      <td>PHP scripting, backend logic</td>
+      <td>Server-side scripting with PHP, Python, or Perl</td>
+      <td>Backend logic, API services</td>
+      <td>Backend services, REST APIs</td>
+      <td>Backend logic, API services</td>
+      <td>Backend logic, server-side rendering</td>
+      <td>Business logic as serverless functions, client-side rendering</td>
+      <td>Data processing, analytics, real-time streaming</td>
+    </tr>
+    <tr>
+      <td>Restful Web Services</td>
+      <td>Implement with PHP or Python frameworks</td>
+      <td>Similar to LAMP stack</td>
+      <td>Similar to LAMP stack</td>
+      <td>Node.js for RESTful APIs</td>
+      <td>Node.js for RESTful APIs</td>
+      <td>Node.js for RESTful APIs</td>
+      <td>Django REST framework</td>
+      <td>APIs for dynamic content</td>
+      <td>Microservices architecture</td>
+    </tr>
+    <tr>
+      <td>JPA Impl</td>
+      <td>Doctrine for PHP</td>
+      <td>Doctrine for PHP</td>
+      <td>Doctrine for PHP</td>
+      <td>Mongoose for MongoDB</td>
+      <td>Sequelize for SQL databases</td>
+      <td>Mongoose for MongoDB</td>
+      <td>Django ORM</td>
+      <td>Not applicable (JAMstack uses file-based CMS or serverless APIs)</td>
+      <td>Spark SQL</td>
+    </tr>
+    <tr>
+      <td>Tools/Features</td>
+      <td>phpMyAdmin, Apache Maven</td>
+      <td>phpMyAdmin, Apache Maven</td>
+      <td>phpMyAdmin, Apache Maven</td>
+      <td>Angular CLI, Express Generator</td>
+      <td>React Developer Tools, Express Generator</td>
+      <td>Vue CLI, Express Generator</td>
+      <td>Django Admin, Django REST framework</td>
+      <td>Netlify, Vercel, GitHub Pages</td>
+      <td>Apache Spark, Kafka, Mesos</td>
+    </tr>
+    <tr>
+      <td>Web Server</td>
+      <td>Apache</td>
+      <td>Apache</td>
+      <td>Apache</td>
+      <td>Node.js (with Nginx for production)</td>
+      <td>Node.js (with Nginx for production)</td>
+      <td>Node.js (with Nginx for production)</td>
+      <td>Various (can be configured with Nginx)</td>
+      <td>Nginx (for serving static files, reverse proxy)</td>
+      <td>Apache, Nginx (for load balancing, reverse proxy)</td>
+    </tr>
+  </tbody>
+</table>
+
+</body>
+</html>

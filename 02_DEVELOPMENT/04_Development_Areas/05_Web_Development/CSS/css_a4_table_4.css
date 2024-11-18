@@ -1,0 +1,62 @@
+/* General body style */
+body {
+  margin: 20px;
+  font-family: Arial, sans-serif;
+}
+/* Style for the entire table */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+}
+/* Style for table headers */
+th {
+  background-color: #f4f4f4;
+  color: #333;
+  padding: 12px;
+  text-align: left;
+  border-bottom: 2px solid #ddd;
+}
+/* Style for table data cells */
+td {
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+}
+/* Alternate row colors for better readability */
+tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+/* Bold text for column headers in merged cells */
+th[colspan] {
+  font-weight: bold;
+  background-color: #e0e0e0;
+}
+/* Style for shortcuts and actions */
+kbd {
+  font-family: monospace;
+  background-color: #eee;
+  border: 1px solid #ccc;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+/* Style for colspan headers */
+td[colspan] {
+  font-weight: bold;
+  background-color: #e0e0e0;
+}
+/* Style for table body rows when hovered */
+tbody tr:hover {
+  background-color: #f1f1f1;
+}
+/* Additional styling for table caption (if needed) */
+caption {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+/* Adjust font size for the table */
+table, th, td {
+  font-size: 14px;
+}

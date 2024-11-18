@@ -1,0 +1,8 @@
+@media print {
+    body{
+        width: 21cm; /*5.5in*/
+        height: 29.7cm; /*8.5in*/
+        margin: 30mm 45mm 30mm 45mm; 
+        /* change the margins as you want them to be. */
+   } 
+}

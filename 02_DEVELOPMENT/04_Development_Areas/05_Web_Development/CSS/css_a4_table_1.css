@@ -1,0 +1,74 @@
+/*Basic CSS Syle for Tables*/
+@page {
+     size: A4 portrait; /*landscape;*/
+     margin: 10mm;
+ }
+ body {
+     font-family: Arial, Helvetica, sans-serif;
+     line-height: 1.6; /* Comfortable line-height for readability */
+     margin: 0;
+     padding: 20px; /* Add some padding for content breathing room */
+     background-color: #ffffff; /* White background for print compatibility */
+     color: #333333; /* Dark grey color for text for better readability */
+ }
+ h1, h2, h3, h4, h5, h6 {
+     font-family: 'Arial Black', Gadget, sans-serif; /* Distinct font for headers */
+     margin-top: 20px;
+     margin-bottom: 10px;
+     color: #333333;
+ }
+ p {
+     margin-bottom: 15px;
+ }
+ table {
+     width: 100%;
+     border-collapse: collapse;
+     margin: 20px 0; /* Space around tables */
+ }
+ th, td {
+     border: 1px solid #dddddd;
+     text-align: left;
+     padding: 10px; /* Slightly increased padding for readability */
+ }
+ th {
+     background-color: #f2f2f2;
+     font-weight: bold;
+ }
+ tr:nth-child(even) {
+     background-color: #f9f9f9;
+ }
+ a {
+     color: #0066cc; /* Blue color for links */
+     text-decoration: none;
+ }
+ a:hover {
+     text-decoration: underline;
+ }
+ ul, ol {
+     margin-bottom: 15px;
+     padding-left: 40px; /* Indentation for lists */
+ }
+ code {
+     font-family: 'Courier New', Courier, monospace;
+     background-color: #f2f2f2;
+     padding: 2px 4px;
+     border-radius: 4px; /* Rounded corners for inline code */
+ }
+ pre {
+     background-color: #f2f2f2;
+     padding: 10px;
+     border-radius: 4px;
+     overflow-x: auto;
+ }
+ blockquote {
+     margin: 20px 0;
+     padding: 10px 20px;
+     background-color: #f9f9f9;
+     border-left: 5px solid #cccccc;
+ }
+ hr {
+     border: none;
+     height: 1px;
+     background-color: #dddddd;
+     margin: 20px 0;
+ }

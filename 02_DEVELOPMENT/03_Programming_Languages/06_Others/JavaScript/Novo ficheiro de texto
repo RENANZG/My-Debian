@@ -1,0 +1,16 @@
+// Select the table
+var table = document.querySelector('table');
+
+// Define which column to extract (adjust index as needed)
+var columnIndex = 2; // Example: extracting the third column (index 2)
+
+// Extract data from the specified column
+var columnData = [];
+var rows = table.rows;
+for (var i = 0; i < rows.length; i++) {
+    var cell = rows[i].cells[columnIndex];
+    columnData.push(cell.innerText.trim()); // Adjust for your specific needs (e.g., innerHTML, textContent)
+}
+
+// Output the extracted data (you can then copy it from the console)
+console.log(columnData.join('\n'));

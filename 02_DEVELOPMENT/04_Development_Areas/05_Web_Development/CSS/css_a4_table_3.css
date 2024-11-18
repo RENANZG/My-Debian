@@ -1,0 +1,47 @@
+@page {
+     size: A4 landscape;
+     margin: 5mm;
+}
+ body {
+     font-family: Arial, sans-serif;
+     line-height: 1.2;
+     width: 100%;
+     height: 100%;
+     margin-botton: auto;
+     margin-left: auto;
+     margin-left: auto;
+     margin-right: auto;
+}
+ table {
+     width: 100%;
+     border-collapse: collapse;
+     table-layout: fixed;
+     margin-botton: auto;
+     margin-left: auto;
+     margin-left: auto;
+     margin-right: auto;
+}
+ h2 {
+     text-align: center;
+     color: #333;
+}
+ th, td {
+     border: 1px solid #ddd;
+     padding: 5px;
+     text-align: left;
+     vertical-align: top;
+}
+ th {
+     background-color: #f4f4f4;
+}
+ ul {
+     list-style-type: none;
+     padding: 0;
+     margin: 0;
+}
+ ul li {
+     background: #f9f9f9;
+     margin: 2px 0;
+     padding: 2px;
+     border: 1px solid #ddd;
+}

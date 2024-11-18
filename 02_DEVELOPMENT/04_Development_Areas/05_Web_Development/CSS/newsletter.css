@@ -1,0 +1,57 @@
+@import url('https://fonts.googleapis.com/css?family=Lato&subset=latin-ext');
+@import url('https://fonts.googleapis.com/css?family=Montserrat:100,300,700');
+
+@page { 
+  size: a4 portrait;
+  margin: 20mm;
+}
+
+body { 
+  columns: 2;
+  font: 12pt/1.40 Lato;
+  widows: 2; orphans: 2;
+}
+
+header { margin: 0; padding: 0; }
+
+h1, h2 { color: #ffa93a }
+
+h1 { 
+  font: 100 80pt Montserrat; column-span: all;
+  margin: 0; padding: 0;
+}
+
+h1 em { font-weight: 700; font-style: normal }
+
+h2 { 
+  font: 300 13pt Montserrat; column-span: all; text-align: right;
+  margin: -1em 0 0 0; padding: 0;
+}
+
+p { text-indent: 1.5em; margin: 0; padding: 0 }
+
+a { color: #ffa93a; text-decoration: none }
+
+b { font-family: Montserrat; font-weight: 700 }
+p.end { text-align: right; margin-top: -0.5em;  }
+p.meta { column-span: all; text-indent: 0 }
+
+img { display: block; margin: 1em 0; width: 100% }
+img.wide { column-span: all; margin-top: 2em; }
+img.icon { display: inline; width: 2em }
+
+section { margin: 0.7em 0 }
+
+aside { float: bottom; font-size: 0.9em; padding-top: 1em; font: 11.5pt/1.4 Lato; }
+aside div { display: table-cell; vertical-align: top }
+
+aside div.teaser { text-align: center; padding-right: 1em }
+aside div.places { text-align: justify  }
+aside h1 { font: 500 40pt/1 Montserrat }
+aside h3 { font: bold 14pt/18pt Lato; }
+
+@media screen {
+  html { background: gray }
+  body { max-width: 50em; margin: 0 auto; background: white; padding: 2em; columns: 20em }
+  aside { background: #ddd; padding: 1em }
+}

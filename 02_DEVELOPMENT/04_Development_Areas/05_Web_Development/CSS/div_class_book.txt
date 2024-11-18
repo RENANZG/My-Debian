@@ -1,0 +1,8 @@
+<div class="book">
+    <div class="page">
+        <div class="subpage">Page 1/2</div>    
+    </div>
+    <div class="page">
+        <div class="subpage">Page 2/2</div>    
+    </div>
+</div>

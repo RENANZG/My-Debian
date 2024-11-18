@@ -1,0 +1,406 @@
+/* find fonts */
+
+@import url(http://fonts.googleapis.com/css?family=Radley:400,400italic);
+@import url(fonts/index.css);
+
+/* @prince-pdf { prince-pdf-page-layout: two-column-right }*/
+
+/* page setup */
+
+@page {
+  size: 115mm 200mm;          /* measured from scanned book */
+  margin: 20mm 15mm;
+  marks: crop; 
+  font: small-caps 600 1.3em "Adobe Caslon Pro", serif;
+
+  @footnote {
+    margin: 0.6em 0 0 0;
+    padding: 0.3em 0 0 0;
+    max-height: 10em;
+  }
+
+  @top-center {
+    vertical-align: bottom; 
+    padding-bottom: 10mm;
+  }
+}
+
+@page :left {
+  @top-left { 
+    vertical-align: bottom; 
+    padding-bottom: 10mm;
+    content: string(page-number, first-except);
+    letter-spacing: 0.1em;
+    margin-left: -1em;
+    font-size: 0.9em; 
+ }
+}
+
+@page :right {
+  @top-right { 
+    vertical-align: bottom; 
+    padding-bottom: 10mm;
+    content: string(page-number, first-except);
+    letter-spacing: 0.08em;
+    margin-right: -1em;
+    font-size: 0.9em; 
+ }
+}
+
+@page cover {
+  size: 125mm 210mm;          /* measured from scanned book */
+}
+
+
+/* general settings */
+
+html, body, section { margin: 0; padding: 0; widows: 2; orphans: 2 }
+
+body { 
+  font: 14pt / 1.4 "Adobe Caslon Pro", serif;
+  word-spacing: 0.044em;
+  letter-spacing: 0.044em;
+  font-variant: prince-opentype(dlig, onum);
+  hyphens: auto;
+  text-align: justify;
+  counter-reset: chapter;
+  prince-text-replace: 
+    "etc." "\26 c."              /* etc. -> &c. */
+    "economist" "\153 conomist"  /* use ae ligature */
+    "Economist" "\152 conomist"  /* use ae ligature */
+    "'" "\2019"                  /* replace ' with right single quotation mark */
+    "\2014" "\200B\2014\200B"    /* add zero width space around mdash to allow line breaks there */
+    "s" "\017F"           /* replace s with long s, which looks like f */
+    "\017Ff" "sf"         /* revert change where s appears before f */
+    "\017Fi" "si"         /* revert change where s appears before i */
+    "\017F\20" "s\20"     /* revert change at end of word */
+    "\017F\0A" "s\20"     /* revert change at end of word, where newline follows in source document */
+    "\017F\200B" "s\20"   /* revert change at end of word, where zero width space follows */
+    "\017F," "s,"         /* revert change at end of word, where comma follows */
+    "\017F;" "s;"         /* revert change at end of word, where semicolon follow */
+    "\017F:" "s:"         /* revert change at end of word, where colon follows */
+    "\017F." "s."         /* revert change at end of word, where period follows */
+    ":" "\2008:"          /* add punctuation space before colon */
+    ":" "\2008?"          /* add punctuation space before question mark */
+    ";" "\2008;"         /* add punctuation space before semicolon*/
+    ;
+}
+
+/* necessity is spelled with double ss, on page 35; however, on page 42 necessity is written as necefsity */
+
+p, blockquote { 
+  text-indent: 1.2em;
+  margin: 1em 0 0;
+}
+
+header + p, p.summary + p { 
+  text-indent: 0 
+}
+
+header + p:first-letter, p.summary + p:first-letter { 
+  font-size: 1.4em;
+  line-height: 0;
+  /* letter-spacing: -0.08em;  */
+}
+
+span.firstword {
+  font-variant: small-caps;
+  prince-text-replace: none;
+  letter-spacing: 0.1em;
+}
+
+p.summary {
+  font-size: 0.8em;
+  margin: 1em 0 1em 1em;
+  text-indent: -1.3em;
+  font-style: italic;
+  prince-text-replace: 
+    "etc." "\26 c."              /* etc. -> &c. */
+    "economist" "\153 conomist"  /* use ae ligature */
+    "Economist" "\152 conomist"  /* use ae ligature */
+    "'" "\2019"                  /* replace ' with right single quotation mark */
+    "\2014" ".\200B\2014\200B"   /* in summary, add period and zero width space around mdash */
+    "s" "\017F"           /* replace s with long s, which looks like f */
+    "\017Ff" "sf"         /* revert change where s appears before f */
+    "\017Fi" "si"         /* revert change where s appears before i */
+    "\017F\20" "s\20"     /* revert change at end of word */
+    "\017F\0A" "s\20"     /* revert change at end of word, where newline follows in source document */
+    "\017F\200B" "s\20"   /* revert change at end of word, where zero width space follows */
+    "\017F," "s,"         /* revert change at end of word, where comma follows */
+    "\017F;" "s;"         /* revert change at end of word, where semicolon follow */
+    "\017F:" "s:"         /* revert change at end of word, where colon follows */
+    "\017F." "s."         /* revert change at end of word, where period follows */
+    ":" "\2008:"          /* add punctuation space before colon */
+    ":" "\2008?"          /* add punctuation space before question mark */
+    ";" "\2008;"          /* add punctuation space before semicolon*/
+}
+
+p.poem {
+  margin: 1.5em 0 1.5em 1.5em;
+  text-indent: 0;
+  font-size: 0.8em;
+  white-space: pre-line;
+  letter-spacing: 0;
+  word-spacing: 0;
+}
+
+p.finis {
+  margin: 2em 0 0;
+  text-align: center;
+  letter-spacing: 0.5em;
+}
+
+section { page-break-after: always }
+
+hr { width: 4em; border: none; border-bottom: 0.2pt solid black; margin: 0.5em auto; background: transparent }
+hr.double { width: 4em; height: 1pt; border-bottom: 0.2pt solid black; border-top: 0.2pt solid black }
+
+/* titlepage */
+
+.titlepage {
+  text-align: center;
+  font-variant: small-caps;
+  prince-text-replace: none;
+  page: cover;
+}
+
+h1 { font-weight: 500; font-size: 1.6em; letter-spacing: 0.1em; margin: 0.7em 0; padding: 0 }
+h2 { font-weight: 500; font-size: 1.05em; font-style: italic; letter-spacing: 0.1em; margin: 0.7em 0; padding: 0 }
+h3 { font-weight: 500; font-size: 1.05em; margin: 1em 0; padding: 0  }
+h4 { font-weight: 500; font-size: 0.8em; margin: 1em 0; padding: 0; margin-top: 0 }
+h4.first { margin-top: 0 }
+h5 { font-weight: 500; font-size: 0.7em; margin: 1em 0; padding: 0 }
+
+
+/* preface */
+
+@page preface {
+  @top-center {
+    content: string(preface-header, first-except);
+    vertical-align: bottom; 
+    padding-bottom: 10mm;
+  }
+}
+
+@page preface:right { 
+  @top-right {
+    content: string(roman-page-number, first-except);
+    vertical-align: bottom; 
+    padding-bottom: 10mm;
+  }
+}
+
+@page preface:left { 
+  @top-left {
+    content: string(roman-page-number, first-except);
+    vertical-align: bottom; 
+    padding-bottom: 10mm;
+  }
+}
+
+.preface {
+  counter-reset: page 1;
+  string-set: roman-page-number counter(page, lower-roman);
+  page: preface;
+  word-spacing: 0.05em;
+  letter-spacing: 0.05em;
+}
+
+.preface header {
+  font-size: 1.5em;
+  letter-spacing: 0.1em;
+  margin: 0.5em 0 1.5em;
+  string-set: preface-header content();
+  font-variant: small-caps;
+  text-align: center;
+}
+
+.preface .date {
+  font-size: 0.8em;
+  text-indent: 1.4em;
+}
+
+/* toc */
+
+.toc {
+  counter-reset: toc-chapter page 1;
+  string-set: roman-page-number counter(page, lower-roman);   /* setting string triggers first-except */
+  page: preface;
+}
+
+.toc header {
+  font-size: 1.5em;
+  letter-spacing: 0.1em;
+  margin: 0.8em 0 0.8em;
+  string-set: preface-header content();
+  font-variant: small-caps;
+  text-align: center;
+}
+
+#toc-container {
+  margin-top: 1.5em;
+}
+
+.toc-summary {
+  font-size: 0.8em;
+  line-height: 1.5;
+  margin: 1em 0 1em 1em;
+  counter-increment: toc-chapter;
+}
+
+.toc-summary:before {
+  content: "CHAP.\A0" counter(toc-chapter, upper-roman) ".";
+  font-style: normal;
+  letter-spacing: 0.1em;
+  text-align: center;
+  display: block;
+  text-indent: 0;
+  font: 600 0.9em "Adobe Caslon Pro", serif;
+  margin: 0.5em 0;
+  page-break-after: avoid; break-after: avoid;
+}
+
+.toc a {
+  text-indent: -1.3em;
+  font-style: italic;
+  color: inherit;
+  text-decoration: none;
+  display: block;
+}
+
+.toc a:after {
+  content: leader(space) "p.\A0" target-counter(attr(href, url), page) ".";
+  font-style: normal;
+  margin-right: -2mm;
+}
+
+/* chapter */
+
+@page chapter:left {
+  @top-center {
+    content: string(an-essay-on-the, first-except);
+    vertical-align: bottom; 
+    padding-bottom: 10mm;
+  }
+}
+
+@page chapter:right {
+  @top-center {
+    content: string(principle-of-population, first-except);
+    vertical-align: bottom; 
+    padding-bottom: 10mm;
+  }
+}
+
+section.chapter.first { 
+  counter-reset: page 1;
+  string-set: page-number counter(page, decimal);
+}
+
+section.chapter { 
+  counter-increment: chapter;
+  page: chapter;
+}
+
+section.chapter header {
+  string-set: an-essay-on-the "an essay on the", principle-of-population "principle of population.";
+  prince-text-replace: none;
+}
+
+section.chapter:before { 
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
+  content: "chapter " counter(chapter, upper-roman) ".";
+  text-align: center;
+}
+
+section.first.chapter:before { 
+  display: none 
+}
+
+section.first.chapter header {
+  font-size: 0.8em;
+  text-align: center;
+  font-variant: small-caps;
+  prince-text-replace: none;
+}
+
+/* footnotes */
+
+::footnote-call {
+  content: "*";
+  font-size: 2em;            /* they used big calls */
+  vertical-align: -0.3em;    /* font-specific hack */
+  line-height: 0;
+}
+
+::footnote-marker {
+  content: "*\A0";
+}
+
+.footnote {
+  float: footnote;
+  font-size: 0.8em;
+  footnote-style-position: inside;
+  text-indent: 1em;
+}
+
+.footnote.center {
+  text-align: center;
+}
+
+figure {
+  margin: 2em 0;
+}
+
+figure header { 
+  font-style: italic;
+  text-align: center;
+  font-size: 1em;
+}
+
+figure table {
+  border-collapse: collapse;
+  font-size: 0.7em;
+  margin: 1em -1em;
+  text-align: center;
+}
+
+figure table td, figure table th {
+  border-left: thin solid black;
+  padding: 0 0.2em;
+  vertical-align: middle;
+}
+figure table td:first-child, figure table th:first-child {
+  border-left: none;
+}
+
+figure table td {
+  white-space:nowrap;
+}
+
+figure table th {
+  font-weight: normal;
+  font-size: 0.9em;
+}
+
+
+q:before, blockquote:before, figcaption:before { content: "\201C\A0 " }
+q:after, blockquote:after, figcaption:after { content: "\A0\201D" }
+q.skipendquote:after { content: "" }
+
+pre { display: none }
+
+@media screen {
+  html { background: #eee; margin: 3em; }
+  body { font: 22px / 1.4 "Radley", serif; letter-spacing: 0; word-spacing: 0 }
+  section { 
+    padding: 1.5em;
+    max-width: 40em;
+    margin: 1em auto;
+    background: white;
+  }
+  .footnote:before { content: " (" }
+  .footnote:after { content: ")" }
+}

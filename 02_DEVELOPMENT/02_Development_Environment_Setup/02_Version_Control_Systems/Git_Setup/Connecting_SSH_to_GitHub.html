@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Connecting SSH to GitHub</title>
+<style>
+  /* Generic style */
+  body {
+       font-family: Arial, sans-serif;
+       line-height: 1.6;
+       margin: 10px;
+       max-width: 800px; /* Limit screen maximum width */
+       margin-left: auto;
+       margin-right: auto;
+  }
+   h1, h2, h3, h4, h5, h6 {
+       font-weight: bold;
+       margin-bottom: 0.5em;
+  }
+   h1 {
+       font-size: 2.5em;
+       line-height: 1.2;
+  }
+   h2 {
+       font-size: 2em;
+       line-height: 1.3;
+  }
+   h3 {
+       font-size: 1.8em;
+       line-height: 1.4;
+  }
+   p {
+       margin: 1em 0;
+       text-align: justify; /* Justify text for better readability */
+  }
+   a {
+       color: #007bff;
+       text-decoration: none;
+  }
+   a:hover {
+       text-decoration: underline;
+  }
+   blockquote {
+       margin: 1em 0;
+       padding: 0 1em;
+       border-left: 3px solid #ccc;
+  }
+   blockquote cite {
+       font-style: italic;
+  }
+   img {
+       max-width: 100%;
+       height: auto;
+       display: block;
+       margin: 1em 0;
+  }
+   pre {
+       background-color: #f8f9fa;
+       border: 1px solid #ccc;
+       padding: 1em;
+       overflow: auto;
+       white-space: pre-wrap; /* Wrap long lines in preformatted text */
+  }
+   code {
+       font-family: Consolas, Monaco, 'Andale Mono', monospace;
+       font-size: 0.9em;
+  }
+  /* Tables */
+   table {
+       width: 100%;
+       border-collapse: collapse;
+       margin-bottom: 1em;
+  }
+   th, td {
+       border: 1px solid #ccc;
+       padding: 0.8em;
+  }
+   th {
+       background-color: #f2f2f2;
+  }
+  /* Lists */
+   ul, ol {
+       margin: 1em 0;
+       padding-left: 2em;
+  }
+  /* Miscellaneous */
+   sup {
+       vertical-align: super;
+       font-size: smaller;
+  }
+   sub {
+       vertical-align: sub;
+       font-size: smaller;
+  }
+   @media screen and (max-width: 600px) {
+      /* Adjustments for smaller screens */
+       body {
+           font-size: 16px; /* Font size for better readability */
+           line-height: 1.5;
+           margin: 0.5em;
+      }
+       h1 {
+           font-size: 2em;
+      }
+       h2 {
+           font-size: 1.8em;
+      }
+       h3 {
+           font-size: 1.6em;
+      }
+       th, td {
+           padding: 0.6em;
+      }
+       pre {
+           padding: 0.5em;
+      }
+  }
+</style>
+</head>
+<body>
+
+  <h2>Connecting SSH to GitHub</h2>
+
+  <p>Connecting to GitHub via SSH.</p>
+
+  <h2>Step 1: Check for Existing SSH Keys</h2>
+  <p>Before creating a new SSH key, check if you already have one. Open your terminal
+    and run:</p>
+  <pre><code>ls -al ~/.ssh</code></pre>
+  <p>This command will list the files in your .ssh directory. Look for files named <code>id_rsa</code>,
+    <code>id_ed25519</code>, or similar.</p>
+
+  <h2>Step 2: Generate a New SSH Key</h2>
+  <p>If you don’t have an SSH key, you can generate one with the following command:</p>
+  <pre><code>ssh-keygen -t ed25519 -C "your_email@example.com"</code></pre>
+  <p>Replace <code>your_email@example.com</code> with the email address associated with
+    your GitHub account (use a noreply email if you prefer 12345678+USERNAME@users.noreply.github.com ,
+    see informations <a herf="https://github.com/settings/emails">here</a>).
+    Follow the prompts to save the key.</p>
+
+  <h2>Step 3: Add Your SSH Key to the ssh-agent</h2>
+  <p>Start the ssh-agent in the background:</p>
+  <pre><code>eval "$(ssh-agent -s)"</code></pre>
+  <p>Then, add your SSH private key:</p>
+  <pre><code>ssh-add ~/.ssh/id_ed25519</code></pre>
+  <p>Make sure to replace <code>id_ed25519</code> with the name of your key file if it’s
+    different.</p>
+
+  <h2>Step 4: Add Your SSH Key to Your GitHub Account</h2>
+  <p>First, copy your SSH public key to your clipboard:</p>
+  <pre><code>cat ~/.ssh/id_ed25519.pub</code></pre>
+  <p>Now, log in to GitHub and navigate to <strong>Settings</strong> &gt; <strong>SSH and GPG keys</strong>.
+    Click on <strong>New SSH key</strong>, paste your key, and give it a title.
+    Or <a herf="https://github.com/settings/keys">click here</a> and go directly to the page.</p>
+
+  <h2>Step 5: Test Your Connection</h2>
+  <p>To confirm everything is set up correctly, test the connection:</p>
+  <pre><code>ssh -T git@github.com</code></pre>
+  <p>You should see a message saying you've successfully authenticated!</p>
+
+  <p>Note: If you see a warning about the authenticity of the host, type <code>yes</code>
+  to add GitHub to your list of known hosts. </p>
+
+  <h2>Step 6: Cloning or Creating a New Repository</h2>
+
+  <h3>Cloning an Existing Repository</h3>
+  <p>To clone an existing GitHub repository using SSH, run:</p>
+  <pre><code>git clone git@github.com:USERNAME/REPOSITORY.git</code></pre>
+  <p>Replace <code>USERNAME</code> with your GitHub username and <code>REPOSITORY</code> with the repository name you wish to clone.</p>
+
+  <h3>Creating a New Repository</h3>
+  <p>If you need to create a new repository, follow these steps:</p>
+  <ol>
+    <li>Go to <a href="https://github.com/new" target="_blank">GitHub's new repository page</a> and create a new repository.</li>
+    <li>Initialize a local repository in your project directory:</li>
+    <pre><code>git init</code></pre>
+    <li>Add the files you want to track:</li>
+    <pre><code>git add .</code></pre>
+    <li>Commit the changes:</li>
+    <pre><code>git commit -m "Initial commit"</code></pre>
+    <li>Add the remote repository (replace <code>USERNAME</code> and <code>REPOSITORY</code> as needed):</li>
+    <pre><code>git remote add origin git@github.com:USERNAME/REPOSITORY.git</code></pre>
+    <li>Set the default branch to <code>main</code>:</li>
+    <pre><code>git branch -M main</code></pre>
+    <li>Push the initial commit to the <code>main</code> branch:</li>
+    <pre><code>git push -u origin main</code></pre>
+  </ol>
+  <p>Your local project is now linked to the newly created GitHub repository, and the default branch is set to <code>main</code>.</p>
+
+  <h2>Step 7: Adding a Remote and Pushing Changes to GitHub</h2>
+
+  <h3>Checking and Adding a Remote</h3>
+  <p>Before pushing changes, ensure you have a remote set up. To check if a remote named <code>origin</code> exists, run:</p>
+  <pre><code>git remote -v</code></pre>
+  <p>If no remote named <code>origin</code> is found, add it:</p>
+  <pre><code>git remote add origin git@github.com:USERNAME/REPOSITORY.git</code></pre>
+
+  <h3>Setting the Default Branch to <code>main</code></h3>
+  <p>To set the default branch to <code>main</code>, run:</p>
+  <pre><code>git branch -M main</code></pre>
+
+  <h3>Pushing Changes</h3>
+  <p>After making changes locally, push them to GitHub using the following commands:</p>
+  <pre><code>git add .</code></pre>
+  <pre><code>git commit -m "Your commit message"</code></pre>
+  <pre><code>git push origin main</code></pre>
+
+  <h3>Handling Push Conflicts (Force Push)</h3>
+  <p>If your push is rejected due to conflicting changes on the remote, it usually means that someone else has pushed changes that conflict with your local changes. To override the remote branch and push your local changes anyway, use a force push. <strong>Be cautious</strong> when doing this, as it will overwrite the remote branch:</p>
+  <pre><code>git push origin main --force</code></pre>
+  <p>This will forcefully push your local changes to the <code>main</code> branch, discarding any changes that exist on the remote branch.</p>
+
+  <h3>GitHub File Size and Transfer Limits</h3>
+  <p>GitHub limits the size of files allowed in repositories:</p>
+  <ul>
+    <li>If you attempt to add or update a file that is larger than <strong>50 MiB</strong>, you will receive a warning from Git. The changes will still push successfully, but consider removing the commit to minimize performance impact.</li>
+    <li>Files larger than <strong>100 MiB</strong> cannot be added to a repository.</li>
+    <li>When adding files via the browser, the file size limit is <strong>25 MiB</strong>.</li>
+  </ul>
+  <p>To track files beyond these limits, you must use <strong>Git Large File Storage (Git LFS)</strong>. For more information, see <a href="https://git-lfs.github.com/" target="_blank">About Git Large File Storage</a>.</p>
+  <p>If you need to distribute large files within your repository, consider creating releases on GitHub instead of tracking the files. For more information, see <a href="https://docs.github.com/en/repositories/releasing-projects-on-github/distributing-large-binaries" target="_blank">Distributing large binaries</a>.</p>
+  <p>Git is not designed to handle large SQL files; for sharing large databases, we recommend using a file-sharing service.</p>
+
+  <h3>Storage and Bandwidth Quotas</h3>
+  <p>GitHub enforces a maximum size limit of <strong>2 GB</strong> for a single push. If your push exceeds this limit, you will need to split it into smaller parts. Here’s how to do that:</p>
+  <ol>
+    <li>First, identify the large files or changes that are contributing to the size of your commit:</li>
+    <pre><code>git diff --stat</code></pre>
+    <li>Then, you can create smaller commits. For example, if you have multiple large files, commit them separately:</li>
+    <pre><code>git add file1</code></pre>
+    <pre><code>git commit -m "Add file1"</code></pre>
+    <pre><code>git add file2</code></pre>
+    <pre><code>git commit -m "Add file2"</code></pre>
+    <li>Push the smaller commits individually:</li>
+    <pre><code>git push origin main</code></pre>
+  </ol>
+
+  <p>Before using <code>git push --force</code>, it is generally safer to pull the remote changes and rebase them onto your local branch:</p>
+  <pre><code>git pull origin main --rebase</code></pre>
+  <pre><code>git push origin main</code></pre>
+
+  <p>If you continue to encounter issues, ensure your SSH keys are set up correctly and test your SSH connection using:</p>
+  <pre><code>ssh -T git@github.com</code></pre>
+
+  <h2>Step 8: Pulling Changes from GitHub</h2>
+  <p>To update your local repository with changes from GitHub, use:</p>
+  <pre><code>git pull origin main</code></pre>
+  <p>This will fetch and merge changes from the remote <code>main</code> branch. If there are conflicts, Git will prompt you to resolve them manually.</p>
+
+  <h3>Using Rebase for a Cleaner History</h3>
+  <p>For a cleaner commit history (avoiding merge commits), use the <code>--rebase</code> option:</p>
+  <pre><code>git pull origin main --rebase</code></pre>
+  <p>If conflicts occur during the rebase, resolve them, then continue the rebase process:</p>
+  <pre><code>git rebase --continue</code></pre>
+
+  <h3>Resolving Merge Conflicts</h3>
+  <p>If conflicts arise during either a merge or rebase, Git will mark the conflicting files. Resolve conflicts in the files and mark them as resolved:</p>
+  <pre><code>git add &lt;file_with_conflict&gt;</code></pre>
+  <p>Afterward, finish the merge or rebase.</p>
+
+</body>
+</html>

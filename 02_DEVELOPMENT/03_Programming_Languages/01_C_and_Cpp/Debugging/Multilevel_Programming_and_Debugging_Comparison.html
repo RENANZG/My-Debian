@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multilevel Programming and Debugging Comparison</title>
+  <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 10px;
+            line-height: 1.4;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            table-layout: fixed;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 4px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        th.custom {
+            width: 100px; /* Adjust this class value as needed */
+        }
+        pre {
+            background-color: #f9f9f9;
+            padding: 4px;
+            border: 1px solid #ccc;
+            font-size: 10px;
+            margin: 0;
+            max-height: 300px; /* Adjust based on your preference */
+            overflow: hidden;
+            white-space: pre-wrap; /* Allows text to wrap */
+            word-wrap: break-word; /* Breaks long words */
+        }
+        h1, h2 {
+            font-size: 18px;
+        }
+        ul {
+            list-style-type: disc;
+            font-size: 12px;
+            margin: 10px;
+            padding: 5px;
+        }
+        ul li {
+            font-size: 12px;
+            margin: 5px;
+        }
+  </style>
+</head>
+
+<body>
+  <h2>Multilevel Programming and Debugging Comparison: C, LLVM, Assembly, and Binary Code</h2>
+  <table>
+    <tr>
+      <th class="custom">Aspect</th>
+      <th>C</th>
+      <th>LLVM</th>
+      <th>Assembly</th>
+      <th>Binary Code</th>
+    </tr>
+    <tr>
+      <td>Description</td>
+      <td>A high-level programming language known for its efficiency and control
+        over system resources.</td>
+      <td>A collection of modular and reusable compiler and toolchain technologies
+        used to develop front ends and back ends for various programming
+        languages.</td>
+      <td>A low-level programming language with a strong correspondence between
+        its instructions and the architecture's machine code instructions.</td>
+      <td>The lowest-level representation of code that is directly executed
+        by a computer's CPU, consisting of binary digits (0s and 1s).</td>
+    </tr>
+    <tr>
+      <td>Typical Use Cases</td>
+      <td>System programming, embedded systems, operating systems, and application
+        development.</td>
+      <td>Compiler construction, code optimization, and toolchain development.</td>
+      <td>System programming, embedded systems, performance-critical applications,
+        and hardware interfaces.</td>
+      <td>Executable code, firmware, and low-level system operations.</td>
+    </tr>
+    <tr>
+      <td>Abstraction Level</td>
+      <td>High</td>
+      <td>Intermediate</td>
+      <td>Low</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <td>Performance</td>
+      <td>High</td>
+      <td>High</td>
+      <td>Very High</td>
+      <td>Maximum</td>
+    </tr>
+    <tr>
+      <td>Portability</td>
+      <td>High</td>
+      <td>High</td>
+      <td>Low</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <td>Example</td>
+      <td>
+        <pre>
+#include &lt;stdio.h&gt;
+
+int main() {
+    printf("Hello, World!\n");
+    return 0;
+}
+        </pre>
+      </td>
+      <td>
+        <pre>
+; ModuleID = 'hello.ll'
+declare i32 @printf(i8*, ...)
+@.str = constant [14 x i8] c"Hello, World!\00"
+
+define i32 @main() {
+    call i32 (i8*, ...) @printf(i8* getelementptr ([14 x i8], [14 x i8]* @.str, i32 0, i32 0))
+    ret i32 0
+}
+        </pre>
+      </td>
+      <td>
+        <pre>
+section .data
+    msg db "Hello, World!", 0
+
+section .text
+    global _start
+
+_start:
+    mov edx, 13
+    mov ecx, msg
+    mov ebx, 1
+    mov eax, 4
+    int 0x80
+
+    mov eax, 1
+    int 0x80
+        </pre>
+      </td>
+      <td>
+        <pre>
+01001000 01100101 01101100 01101100 01101111 00101100 00100000 01010111 01101111 01110010 01101100 01100100 00100001
+        </pre>
+      </td>
+    </tr>
+    <tr>
+      <td>Compilers</td>
+      <td>GCC (GNU Compiler Collection), Clang, MSVC (Microsoft Visual C++)</td>
+      <td>Clang, LLD, LLDB</td>
+      <td>NASM (Netwide Assembler), MASM (Microsoft Assembler), GAS (GNU Assembler)</td>
+      <td>N/A (Produced by assemblers and compilers)</td>
+    </tr>
+  </table>
+
+  <!-- ########## -->
+
+  <h2>Debugging Techniques</h2>
+  <ul>
+    <li>C
+      <pre>
+- Tools: GDB (GNU Debugger), LLDB, Valgrind
+- Techniques: Breakpoints, watchpoints, step through code, examine variables and memory, backtracing
+- Example: 
+    gdb ./a.out
+    (gdb) break main
+    (gdb) run
+    (gdb) next
+    (gdb) print variable_name
+    (gdb) backtrace
+      </pre>
+    </li>
+    <li>LLVM
+      <pre>
+- Tools: LLDB (LLVM Debugger), llvm-dwarfdump, llvm-objdump
+- Techniques: Debugging at the intermediate representation level, inspecting LLVM IR, using DWARF debug information
+- Example: 
+    lldb ./a.out
+    (lldb) target create "a.out"
+    (lldb) break set --name main
+    (lldb) run
+    (lldb) next
+    (lldb) frame variable variable_name
+    (lldb) thread backtrace
+      </pre>
+    </li>
+    <li>Assembly
+      <pre>
+- Tools: GDB, LLDB, objdump, strace, ltrace
+- Techniques: Debugging at the instruction level, examining registers and memory, tracing system calls
+- Example:
+    gdb ./a.out
+    (gdb) layout asm
+    (gdb) break _start
+    (gdb) run
+    (gdb) stepi
+    (gdb) info registers
+    (gdb) x/10i $pc
+      </pre>
+    </li>
+    <li>Binary Code
+      <pre>
+- Tools: GDB, LLDB, Hex editors, Binary analysis tools like radare2, Binary Ninja, IDA Pro
+- Techniques: Analyzing binary data, reverse engineering, examining binary code in hex format, debugging without source
+- Example:
+    gdb ./a.out
+    (gdb) x/16bx address
+    (gdb) x/10i address
+    (gdb) disassemble function_name
+      </pre>
+    </li>
+  </ul>
+
+  <!-- ########## -->
+
+  <h2>LLVM IR Formats</h2>
+  <ul>
+    <li>Textual IR (LLVM Assembly Language)
+      <pre>
+; ModuleID = 'hello.ll'
+declare i32 @printf(i8*, ...)
+@.str = constant [14 x i8] c"Hello, World!\00"
+
+define i32 @main() {
+    call i32 (i8*, ...) @printf(i8* getelementptr ([14 x i8], [14 x i8]* @.str, i32 0, i32 0))
+    ret i32 0
+}
+      </pre>
+    </li>
+    <li>Binary IR (LLVM Bitcode)
+      <pre>
+; Binary data, not human-readable
+      </pre>
+    </li>
+    <li>In-memory IR
+      <pre>
+; Used internally within LLVM, not directly visible
+      </pre>
+    </li>
+  </ul>
+  
+    <!-- ########## -->
+
+  <h2>LLVM Supported Architectures</h2>
+  <ul>
+    <li>x86</li>
+    <li>x86-64</li>
+    <li>ARM</li>
+    <li>AArch64 (ARM64)</li>
+    <li>PowerPC</li>
+    <li>MIPS</li>
+    <li>RISC-V</li>
+    <li>SPARC</li>
+    <li>WebAssembly</li>
+    <li>And many others</li>
+  </ul>
+
+</body>
+</html>
