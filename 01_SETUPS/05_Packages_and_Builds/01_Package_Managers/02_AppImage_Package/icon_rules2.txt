@@ -1,0 +1,68 @@
+# Function to configure extracted files (desktop entry, icon)
+configure_files() {
+  local EXTRACTED_DIR="$HOME/squashfs-root"
+
+  # Get the bubblewrap command
+  BWRAP_CMD=$(get_bwrap_cmd)
+
+  # Search for desktop entry files in standard directories
+  DESKTOP_ENTRY_SRC=$(find "$EXTRACTED_DIR" -path "*/usr/share/applications/*.desktop" -type f | head -n 1)
+
+  # Search for icon files in standard directories
+  ICON_FILE=$(find "$EXTRACTED_DIR" \
+    \( -path "*/usr/share/icons/hicolor/*/apps/*" -o -path "*/icons/*" \) \
+    \( -name "*.png" -o -name "*.svg" \) | head -n 1)
+
+  # If no valid desktop entry is found, create a basic one
+  if [ -z "$DESKTOP_ENTRY_SRC" ]; then
+    echo "No valid desktop entry found, creating a basic one..."
+
+    DESKTOP_ENTRY_SRC="$HOME_DIR/$APP_NAME.desktop"
+    cat > "$DESKTOP_ENTRY_SRC" <<EOF
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=$APP_NAME
+Exec=$BWRAP_CMD
+Icon=$APP_NAME
+Categories=Utility;
+EOF
+  fi
+
+  # If no valid icon is found, use the application name as the icon name
+  if [ -z "$ICON_FILE" ]; then
+    echo "No valid icon found, using the application name as the icon reference..."
+    ICON_PATH="$APP_NAME"  # This will let the system look for a system-wide icon with the name
+  else
+    # Handle PNG or SVG icons and convert SVG if necessary
+    if [[ "$ICON_FILE" == *.png ]]; then
+      cp "$ICON_FILE" "$HOME_DIR/icon/$APP_NAME.png"
+      ICON_PATH="$HOME_DIR/icon/$APP_NAME.png"
+    elif [[ "$ICON_FILE" == *.svg ]]; then
+      if command -v rsvg-convert > /dev/null 2>&1; then
+        echo "Converting SVG icon to PNG..."
+        rsvg-convert -o "$HOME_DIR/icon/$APP_NAME.png" "$ICON_FILE"
+        ICON_PATH="$HOME_DIR/icon/$APP_NAME.png"
+      else
+        echo "Warning: rsvg-convert not found, using the SVG icon."
+        cp "$ICON_FILE" "$HOME_DIR/icon/$APP_NAME.svg"
+        ICON_PATH="$HOME_DIR/icon/$APP_NAME.svg"
+      fi
+    fi
+  fi
+
+  # Escape special characters in BWRAP_CMD and ICON_PATH
+  BWRAP_CMD_ESCAPED=$(printf '%s\n' "$BWRAP_CMD" | sed 's/[\/&]/\\&/g')
+  ICON_PATH_ESCAPED=$(printf '%s\n' "$ICON_PATH" | sed 's/[\/&]/\\&/g')
+
+  # Update the Exec and Icon fields in the desktop entry
+  sed -i "s@^Exec=.*@Exec=$BWRAP_CMD_ESCAPED@g" "$DESKTOP_ENTRY_SRC"
+  sed -i "s@^Icon=.*@Icon=$ICON_PATH_ESCAPED@g" "$DESKTOP_ENTRY_SRC"
+
+  # Copy the desktop entry to the appropriate directories
+  cp "$DESKTOP_ENTRY_SRC" "$DESKTOP_ENTRY"
+  cp "$DESKTOP_ENTRY" "$HOME/Desktop"
+
+  # Cleanup the temporary extraction directory
+  rm -rf "$EXTRACTED_DIR"
+}

@@ -1,0 +1,32 @@
+remote <OPENVPN_SERVER_EXTIP> #the server external IP
+port <OPENVPN_SERVER_PORT> #the server listening port
+proto <OPENVPN_CLIENT_PROTOCOL> #the protocol following the server configuration
+
+dev-type tap
+dev <PROJECTSHORTNAME>
+
+client
+resolv-retry infinite
+mute-replay-warnings
+verb 3
+persist-tun
+persist-key
+tun-mtu 1500
+
+remote-cert-tls server
+
+cipher AES-256-CBC
+
+tls-client
+tls-auth "/etc/openvpn/client/<PROJECTSHORTNAME>/ta.key" 1
+ca "/etc/openvpn/client/<PROJECTSHORTNAME>/ca.crt"
+cert "/etc/openvpn/client/<PROJECTSHORTNAME>/expert.crt"
+key "/etc/openvpn/client/<PROJECTSHORTNAME>/expert.key"
+
+log-append "/var/log/openvpn.<PROJECTSHORTNAME>.log"
+status "/var/run/openvpn.<PROJECTSHORTNAME>.status" 1
+
+tls-timeout 40
+
+pull
+

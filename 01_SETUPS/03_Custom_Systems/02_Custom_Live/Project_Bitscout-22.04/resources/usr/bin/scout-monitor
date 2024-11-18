@@ -1,0 +1,120 @@
+#!/bin/bash
+DELAY=5
+
+COLS=`tput cols`
+LINES=`tput lines`
+
+OPENVPNUP=no
+OPENVPNLOG=/var/log/openvpn.scout.log
+
+WGVPNUP=no
+if wg show scout >/dev/null; then
+  WGVPNUP=yes
+fi
+
+TORHIDSERVUP=no
+if systemctl --no-pager status tor@default; then
+  TORHIDSERVUP=yes
+fi
+
+hr() {
+  local start=$'\e(0' end=$'\e(B' line='q'
+  local cols=${COLUMNS:-$(tput cols)}
+  while ((${#line} < cols)); do line+="$line"; done
+  printf '%s%s%s\n' "$start" "${line:0:cols}" "$end"
+}
+
+align_center() {
+  local msglen=`echo "$1"|wc -c` spaces=""
+  spacecount=$[($COLS-$msglen)/2]
+  for ((i=0;i<$spacecount;i++)); do spaces+=" "; done
+  printf "$spaces$1$spaces\n"
+}
+
+monitor_new_sessions() {
+  HISTORIANDIR=/opt/container/history
+  TRACKLIST=/var/run/scout-monitor.$$.tracklist
+  ls -1 "$HISTORIANDIR"/log/*.log 2>/dev/null |
+  while read f; 
+  do
+    LOGID="${f/*\//}"; LOGID=${LOGID%%.log};
+    if ! ( grep -q "$LOGID" "$TRACKLIST" 2>/dev/null || tmux list-windows -t "status:main" 2>&- | grep -q "$LOGID" )
+    then
+      tmux new-window -a -t "status:main" -n "$LOGID" -d "tail -n80 -f \"$f\"" 2>&-
+      echo "$LOGID" >> "$TRACKLIST"
+    fi
+  done
+}
+
+
+HOME=$(tput cup 0 0)
+ED=$(tput ed)
+EL=$(tput el)
+
+COL_RED="\x1b[01;31m"
+COL_GREEN="\x1b[01;32m"
+COL_YELLOW="\x1b[01;33m"
+COL_BLUE="\x1b[01;34m"
+COL_PURPLE="\x1b[01;35m"
+COL_CYAN="\x1b[01;36m"
+COL_WHITE="\x1b[01;37m"
+
+COL_STOP="\x1b[00m"
+
+while true
+do
+  if systemctl --no-pager status openvpn-client@scout.service 2>/dev/null >/dev/null; then
+    if [ "$OPENVPNUP" == "no" ]; then
+      clear
+    fi;
+    OPENVPNUP=yes
+  fi
+
+  printf '%s%s' "$ED" "$HOME"
+
+  (
+  hr
+  align_center "SIMPLE STATUS MONITOR"
+  hr
+  echo -e "To exit press ctrl+c (one or few times), or ctrl+b and then 'd'. If you see numbered tabs at the bottom, session monitoring is available. To switch to another tab, press ctrl+b and then the tab number. To open a multi-digit tab number, press ctrl+b and then ' (single quote), enter the tab index."
+  hr
+  echo "Hostname: "`hostname`"  Uptime: "`uptime`
+  cat /proc/meminfo | awk '/MemTotal/ {print "Memory Total: '"$COL_GREEN"'" $2/1024" MB'"$COL_STOP"'  |  "}; /MemAvailable/ {print "Memory Avail: '"$COL_GREEN"'" $2/1024" MB'"$COL_STOP"'"};'| xargs echo -e
+  hr 
+  echo "Network interfaces and their routing tables:"
+  ip -o addr show| grep 'inet ' | awk '{print $2" "$4}' | while read iface ip;
+  do
+    if echo "$iface" | grep -q "^eth"
+    then
+      echo -e " ${iface} ${COL_BLUE}${ip}${COL_STOP}"
+    else
+      echo " ${iface} ${ip}"
+    fi
+    ip route show dev "$iface" | sed 's/^/    /g'
+  done
+  hr  
+  echo "Latest kernel messages:"
+  dmesg | tail -n10 |cut -c -$COLS
+  hr
+
+  if [ $OPENVPNUP = "yes" ]; then
+    echo "Latest OpenVPN messages:"
+    if [ -f "$OPENVPNLOG" ]
+    then
+      tail -n10 "$OPENVPNLOG" | awk '{printf("%s",$0); for(i=0;i<'$COLS'-length($0);i++){printf(" ");} printf("\n");}'
+    else
+      echo "No VPN log file found at $OPENVPNLOG"
+    fi
+  elif [ $WGVPNUP = "yes" ]; then
+    echo "Wireguard status:"
+    wg show scout | tail -n +7 | grep -v "(hidden)"
+  elif [ $TORHIDSERVUP = "yes" ]; then
+    echo "TOR Hidden Network status:"
+    journalctl -u tor@default -n 11 --no-pager
+  fi
+  )
+  #clear; echo "$frame";
+
+  monitor_new_sessions
+  sleep $DELAY
+done

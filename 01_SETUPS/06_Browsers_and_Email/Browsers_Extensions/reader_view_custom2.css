@@ -1,0 +1,74 @@
+/* Style for body */
+body {
+  word-wrap: break-word; /* Legacy support for older browsers */
+  overflow-wrap: break-word; /* Enable word wrapping */
+  padding: 5px; /* Remove padding */
+  margin: 5px; /* Ensure no margins */
+  hyphens: auto; /* Allow hyphenation for better word breaking */
+}
+div {
+  word-wrap: break-word; /* For compatibility */
+  overflow-wrap: break-word; /* Enable wrapping for divs */
+  line-height: auto; /* Maintain line height */
+  background-color: auto; /* Background */
+  border: auto; /* Use border color from original */
+  padding: auto; /* Use consistent padding */
+  white-space: pre-wrap; /* Preserve whitespace and allow wrapping */
+}
+p {
+  margin: auto; /* Add bottom margin for paragraphs */
+  overflow-wrap: break-word; /* Enable wrapping for paragraphs */
+  display: block; /* Ensure block behavior */
+}
+/* Style for <pre> tags */
+pre {
+  white-space: pre-wrap;
+  padding: 5px; /* Add padding for spacing */
+  background-color: #f7f7f7; /* Light background color */
+  border: 1px solid #ccc; /* Optional: Add a border for clarity */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Shadow for the whole <pre> */
+}
+/* Style for <code> tags inside <pre> */
+pre code {
+  display: block;
+  background-color: inherit; /* Inherit background color from <pre> */
+  color: #393318;
+  font-family: monospace;
+  padding: 5px 5px;
+  border-radius: 3px; /* Optional: Rounded corners for <code> */
+}
+/* Style for tables */
+table {
+  border-collapse: collapse; /* Collapse table borders */
+  width: 100%; /* Optional: Ensure table width spans full container */
+  border: 1px solid #000; /* Add borders to all tables */
+}
+/* Optional: Style for table headers */
+table th {
+  border: 1px solid #000; /* Ensure headers have borders */
+  background-color: #f2f2f2; /* Light background color for headers */
+  padding: 8px; /* Padding for header cells */
+}
+/* Optional: Style for table cells */
+table td {
+  border: 1px solid #000; /* Ensure cells have borders */
+  padding: 8px; /* Padding for table cells */
+}
+/* Style for different font themes */
+  body[data-font=sans-serif] {
+  font-family: Arial, sans-serif; /* Use a common sans-serif font */
+}
+  body[data-font=serif] {
+  font-family: Georgia, serif; /* Use a common serif font */
+}
+  body[data-mode=sepia] {
+  color: #5b4636; /* Adjust sepia mode color */
+  background-color: #f4ecd8; /* Sepia background */
+}
+  body[data-mode=light] {
+  background-color: #fff; /* Light mode background */
+}
+  body[data-mode=dark] {
+  color: #e8e8e8; /* Light text for dark mode */
+  background-color: #333; /* Dark background */
+}

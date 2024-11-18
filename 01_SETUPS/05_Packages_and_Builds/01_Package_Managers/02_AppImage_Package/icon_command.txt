@@ -1,0 +1,6 @@
+find '/home/user/squashfs-root' \( -name "*.png" -o -name "*.svg" -o -name "*.desktop" \) -print
+
+
+
+
+find '/home/user/squashfs-root' \( -name "*.png" -o -name "*.svg" -o -name "*.desktop" \) -print > icon.txt

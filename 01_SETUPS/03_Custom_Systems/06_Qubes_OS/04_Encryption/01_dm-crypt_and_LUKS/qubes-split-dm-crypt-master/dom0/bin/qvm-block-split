@@ -1,0 +1,392 @@
+#!/bin/bash
+set -e -o pipefail -o errtrace
+trap 'exit $?' ERR
+
+QUBESRPC='PATH=/usr/local/etc/qubes-rpc:/etc/qubes-rpc:$PATH'
+
+
+#### general functions ########################################################
+
+message() { echo "${0##*/}: $1" >&2; }
+
+direct_tty() {
+    if [[ -t 0 ]]; then
+        local stty_bak
+
+        stty_bak=$(stty -g)
+        trap "stty $stty_bak" EXIT  # restore settings on (sub)shell exit
+        stty -echo -icanon  # disable echoing and line buffering
+    fi
+}
+
+ansi_format() {
+    local fd
+
+    for fd in 1 2; do
+        if [[ -t $fd ]]; then
+            printf "\e[%sm" "$1" >&$fd
+        fi
+    done
+}
+
+red_text() {
+    trap "ansi_format 0" EXIT  # reset formatting on (sub)shell exit
+    ansi_format "0;31"         # reset formatting; red foreground
+    red_text() { :; }  # don't do this again in deeper scope
+}
+
+in_out() {
+    (
+        red_text
+        qvm-run --no-color-output --no-color-stderr --pass-io --user root "$@"
+    )
+}
+
+out() { in_out "$@" </dev/null; }
+
+new_offline_dvm() {
+    local template
+    local label
+    local dvm
+
+    template=${TEMPLATE_FOR_DISPVMS:-$(qubes-prefs default_dispvm)}
+    label=$(qvm-prefs "$template" label)
+
+    for try in $(seq 10); do
+        dvm=split-$1-disp$((RANDOM % 10000))
+
+        if qvm-create --class DispVM --template "$template" --label "$label" \
+                      --prop netvm= --prop auto_cleanup=True "$dvm"; then
+            qvm-start --quiet "$dvm"
+            echo "$dvm"
+            return 0
+        else
+            case $? in
+                1) continue ;;
+                *) return $? ;;
+            esac
+        fi
+    done
+
+    return 1
+}
+
+qvm_block_list_retry() {
+    until qvm-block list; do sleep 1; done
+}
+
+qvm_block_list_device_attached_vm() {
+    qvm_block_list_retry |
+    sed -e "/^$1 .*)$/!d" -e 's/ *([^()]\+)$//' -e 's/.* //' |
+    grep -m 1 .
+}
+
+
+#### Split dm-crypt functions #################################################
+
+dev_dvm() {
+    local DEV_DVM
+    local HEADER_DVM
+
+    if ! qvm_block_list_retry | grep -q "^$BLOCK_DEV "; then
+        message "error: could not find block device $BLOCK_DEV"
+        exit 1
+    fi
+
+    message "starting device DisposableVM"
+    DEV_DVM=$(new_offline_dvm dev)
+    message "started device DisposableVM $DEV_DVM"
+    HEADER_DVM=$DEV_DVM  # for non header_dvm() case
+
+    message "in $DEV_DVM: disabling block device content parsing"
+    # a udev .rules file piggybacks on this kernel parameter:
+    out "$DEV_DVM" "echo Y >/sys/module/block/parameters/no_part_scan"
+
+    message "attaching $BLOCK_DEV to $DEV_DVM"
+    qvm-block attach --option frontend-dev=xvds "${READONLY[@]}" \
+                     "$DEV_DVM" "$BLOCK_DEV"
+
+    "$@"
+}
+
+header_dvm() {
+    message "starting header DisposableVM"
+    HEADER_DVM=$(new_offline_dvm header)
+    message "started header DisposableVM $HEADER_DVM"
+
+    "$@"
+
+    message "stopping $HEADER_DVM"
+    qvm-kill "$HEADER_DVM"
+}
+
+format_header_luks1() {
+    message "in $HEADER_DVM: running luksFormat on header file"
+    (
+        direct_tty
+        in_out --service "$HEADER_DVM" splitDmCrypt.FormatHeader+luks1
+    )
+}
+
+header_sh() {
+    message "in $HEADER_DVM: opening shell"
+    (
+        direct_tty
+        in_out --service "$HEADER_DVM" splitDmCrypt.Shell
+    )
+}
+
+random_header_luks1() {
+    message "in $HEADER_DVM: generating random header"
+    out "$HEADER_DVM" "$QUBESRPC; splitDmCrypt.SendHeader+random |
+                                  splitDmCrypt.ReceiveHeader+luks1"
+}
+
+transfer_header_luks1() {
+    message "sending header from $DEV_DVM to $HEADER_DVM"
+    (
+        red_text
+        out    --service    "$DEV_DVM" splitDmCrypt.SendHeader+luks1 |
+        in_out --service "$HEADER_DVM" splitDmCrypt.ReceiveHeader+luks1
+    )
+}
+
+transfer_keyfile() {
+    if [[ $KEYFILE_PATH ]]; then
+        message "sending key file from $KEYFILE_VM to $HEADER_DVM"
+        (
+            red_text
+            if [[ $KEYFILE_VM == dom0 ]]; then
+                cat -- "$KEYFILE_PATH"
+            else
+                printf '%s\0' "$KEYFILE_PATH" |
+                in_out "$KEYFILE_VM" "cd ~user && xargs -0 cat --"
+            fi |
+            in_out --service "$HEADER_DVM" splitDmCrypt.ReceiveKeyfile
+        )
+    fi
+}
+
+open_luks1() {
+    transfer_header_luks1
+    transfer_keyfile
+
+    message "sending key from $HEADER_DVM to $DEV_DVM"
+    (
+        red_text
+        (
+            direct_tty
+            in_out --service "$HEADER_DVM" splitDmCrypt.SendKey+luks1
+        ) | in_out --service    "$DEV_DVM" splitDmCrypt.Map+luks1
+    )
+}
+
+find_dm_dev() {
+    qvm_block_list_retry |
+    grep -m 1 -E "^$1:dm-[0-9]+ +split-dm-crypt( |$)" |
+    cut -f 1 -d " "
+}
+
+attach_decrypted() {
+    local dm_dev
+
+    "$@"
+
+    if ! dm_dev=$(find_dm_dev "$DEV_DVM"); then
+        message "error: could not find device-mapper device in $DEV_DVM"
+        exit 1
+    fi
+
+    if [[ $DEST_VM == [@$]dispvm ]]; then
+        message "starting destination DisposableVM"
+        DEST_VM=$(new_offline_dvm dest)
+        message "started destination DisposableVM $DEST_VM"
+    else
+        message "ensuring destination VM is running"
+        qvm-start --quiet --skip-if-running "$DEST_VM"
+    fi
+
+    message "attaching $dm_dev to $DEST_VM"
+    qvm-block attach "${READONLY[@]}" "$DEST_VM" "$dm_dev"
+}
+
+double_detach() {
+    local dev_dvm
+    local dm_dev
+    local dest_vm
+
+    if ! dev_dvm=$(qvm_block_list_device_attached_vm "$BLOCK_DEV"); then
+        message "error: could not find device DisposableVM for $BLOCK_DEV"
+        exit 1
+    fi
+
+    if ! dm_dev=$(find_dm_dev "$dev_dvm"); then
+        message "error: could not find device-mapper device in $dev_dvm"
+        exit 1
+    fi
+
+    if dest_vm=$(qvm_block_list_device_attached_vm "$dm_dev"); then
+        message "detaching $dm_dev from $dest_vm"
+        qvm-block detach "$dest_vm" "$dm_dev"
+    fi
+
+    message "in $dev_dvm: unmapping"
+    out --service "$dev_dvm" splitDmCrypt.Unmap
+
+    message "detaching $BLOCK_DEV from $dev_dvm"
+    qvm-block detach "$dev_dvm" "$BLOCK_DEV"
+
+    message "stopping $dev_dvm"
+    qvm-kill "$dev_dvm"
+}
+
+overwrite_everything_with_random() {
+    message "in $DEV_DVM: waiting for entropy pool initialization"
+    out --service "$DEV_DVM" splitDmCrypt.WaitForRandom
+
+    message "in $DEV_DVM: mapping with random key"
+    out "$DEV_DVM" "$QUBESRPC; splitDmCrypt.SendKey+random |
+                               splitDmCrypt.Map"
+
+    message "in $DEV_DVM: overwriting"
+    out --service "$DEV_DVM" splitDmCrypt.ZeroMapped
+
+    message "in $DEV_DVM: unmapping"
+    out --service "$DEV_DVM" splitDmCrypt.Unmap
+
+    message "stopping $DEV_DVM"
+    qvm-kill "$DEV_DVM"
+}
+
+change_header_luks1() {
+    local get_header=$1
+    local mod_header=$2
+
+    message "in $HEADER_DVM: waiting for entropy pool initialization"
+    out --service "$HEADER_DVM" splitDmCrypt.WaitForRandom
+
+    $get_header
+    ${mod_header:+transfer_keyfile}
+    $mod_header
+
+    if [[ $HEADER_DVM != $DEV_DVM ]]; then
+        message "sending header from $HEADER_DVM to $DEV_DVM"
+        (
+            red_text
+            out    --service "$HEADER_DVM" splitDmCrypt.SendHeader+file |
+            in_out --service    "$DEV_DVM" splitDmCrypt.ReceiveHeader+luks1
+        )
+    fi
+
+    message "in $DEV_DVM: writing header to device"
+    out --service "$DEV_DVM" splitDmCrypt.ReplaceHeader+luks1
+
+    message "detaching $BLOCK_DEV from $DEV_DVM"
+    qvm-block detach "$DEV_DVM" "$BLOCK_DEV"
+
+    message "stopping $DEV_DVM"
+    qvm-kill "$DEV_DVM"
+}
+
+usage() {
+    cat >&2 <<END
+
+  qvm-block-split - manage "Split dm-crypt", isolating device-mapper based
+  secondary storage encryption and LUKS1 header processing to DisposableVMs
+
+  Usage: qvm-block-split attach|at|a [--ro] [<k>] [<dst-vm>] <src-vm>:<device>
+                         detach|dt|d                         <src-vm>:<device>
+
+                         overwrite-everything-with-random    <src-vm>:<device>
+                         overwrite-header-with-random        <src-vm>:<device>
+                         overwrite-header-with-format [<k>]  <src-vm>:<device>
+                         overwrite-header-with-shell  [<k>]  <src-vm>:<device>
+                         modify-header-with-shell     [<k>]  <src-vm>:<device>
+
+  The <dst-vm> argument defaults to yet another DisposableVM.
+  <k> stands for an optional --key-file=[<key-vm>:]<file> argument.
+
+END
+    exit 1
+}
+
+
+#### main program #############################################################
+
+CONF=/etc/split-dm-crypt.conf
+if [[ -e $CONF ]]; then
+    source "$CONF"
+fi
+
+ARGS=()
+KEYFILE_VM=
+KEYFILE_PATH=
+READONLY=()
+for arg; do
+    case $arg in
+        --key-file=?*)
+            val=${arg#*=}
+            if [[ $val == [!/.]*:* ]]; then
+                KEYFILE_VM=${val%%:*}
+                KEYFILE_PATH=${val#*:}
+            else
+                KEYFILE_VM=dom0
+                KEYFILE_PATH=$val
+            fi
+        ;;
+        --ro)
+            READONLY=( "$arg" )
+        ;;
+        *)
+            ARGS+=( "$arg" )
+        ;;
+    esac
+done
+
+if [[ ( ${#ARGS[@]} == 3 || ${#READONLY[@]} != 0 ) &&
+      !  ${ARGS[0]} =~ ^attach|at|a$ ]]; then
+    usage
+fi
+
+case ${#ARGS[@]} in
+    2)
+        DEST_VM=@dispvm
+        BLOCK_DEV=${ARGS[1]}
+    ;;
+    3)
+        DEST_VM=${ARGS[1]}
+        BLOCK_DEV=${ARGS[2]}
+    ;;
+    *)
+        usage
+    ;;
+esac
+
+case ${ARGS[0]} in
+    attach|at|a)
+        dev_dvm attach_decrypted header_dvm open_luks1
+    ;;
+    detach|dt|d)
+        double_detach
+    ;;
+    overwrite-everything-with-random)
+        dev_dvm overwrite_everything_with_random
+    ;;
+    overwrite-header-with-random)
+        dev_dvm change_header_luks1 random_header_luks1
+    ;;
+    overwrite-header-with-format)
+        dev_dvm change_header_luks1 random_header_luks1 format_header_luks1
+    ;;
+    overwrite-header-with-shell)
+        dev_dvm change_header_luks1 random_header_luks1 header_sh
+    ;;
+    modify-header-with-shell)
+        dev_dvm header_dvm change_header_luks1 transfer_header_luks1 header_sh
+    ;;
+    *)
+        usage
+    ;;
+esac
+
+message "done"

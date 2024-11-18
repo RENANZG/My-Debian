@@ -1,0 +1,352 @@
+#!/bin/bash
+#single instance shall be running at all times
+[ "${FLOCKER}" != "$0" ] && exec env FLOCKER="$0" flock -en "$0" "$0" "$@" || :
+
+#Exit if the script was started NOT on the host system.
+#It must NOT be run within container!
+if [ -f /this_is_container ]; then exit 1; fi;
+touch /this_is_host
+
+PROJECTNAME="<PROJECTNAME>"
+CONTAINERDIR="/opt/container"
+CONTAINERHOSTDEV="/dev/host"
+CONTAINERNET_NAME="<CONTAINERNET_NAME>"
+CONTAINERNET_HOST_IP_CIDR="<CONTAINERNET_HOST_IP_CIDR>"
+CONTAINERNET_GUEST_IP="<CONTAINERNET_GUEST_IP>"
+CONTAINERNET_GUEST_DNS="<CONTAINERNET_GUEST_DNS>"
+HOSTSSH_ENABLED=<HOSTSSH_ENABLED>
+LANACCESS_ENABLED=<LANACCESS_ENABLED>
+HISTORIAN_ZRAM_SIZE=<HISTORIAN_ZRAM_SIZE>
+AUTOMOUNT=<AUTOMOUNT>
+
+USERSUBUID=100000
+USERSUBGID=100000
+
+LOCALUSER=user
+
+if [ $# -eq 0 ]
+then
+ echo "Usage $1 [start|stop]"
+fi
+
+if [ "$1" == "start" ]
+then
+  echo "Parsing kernel cmdline.."
+  for x in $(cat /proc/cmdline); do
+    case $x in
+     boot=*) export KERNEL_BOOTMODE="${x#boot=}";;
+     root=*) export ROOTDEVID="${x#root=}";;
+     persist=*) export PERSDEVID="${x#persist=}";;     
+    esac
+  done
+
+  #set opened files ulimit, required for bindfs operation
+  echo "Setting opened files ulimit value.."
+  ulimit -n 200000
+
+  echo "Loading default firewall rules.."
+  /sbin/host-iptables
+
+  if [ $LANACCESS_ENABLED -eq 1 ]
+  then
+    echo "Enabling direct access from LAN.."
+    /sbin/host-iptables enable-access-from-lan
+  fi
+
+  if [ $HOSTSSH_ENABLED -eq 1 ]
+  then
+    echo "Enabling SSH access to the host system (using port 23).."
+    rm /etc/ssh/sshd_not_to_be_run
+    sed -i 's/Port 22/Port 23/' /etc/ssh/sshd_config
+
+    #customize ssh banner
+    echo "Customizing SSH banner.."
+    sed -i 's/^\(VersionAddendum.*\)\( (host)\)?$/\1 (host)/' "/etc/ssh/sshd_config.d/banner.conf"
+    systemctl enable ssh.service
+  fi
+
+  mkdir -p "$CONTAINERDIR/"{chroot,chroot.user,history}
+  if ! mount | grep -q "$CONTAINERDIR/reflection"
+  then
+    if [ -n $KERNEL_BOOTMODE -a $KERNEL_BOOTMODE = "casper" ]; then
+			echo "Making and mounting tmpfs for reflective overlayfs.."
+			mkdir -p "$CONTAINERDIR/reflection"
+			mount tmpfs -t tmpfs "$CONTAINERDIR/reflection"
+			mkdir -p "$CONTAINERDIR/reflection/"{upper,work}
+			
+			echo "Mounting /rofs to the chroot via overlayfs.."
+			mount /rofs -t overlay -o "rw,relatime,lowerdir=/rofs,upperdir=$CONTAINERDIR/reflection/upper,workdir=$CONTAINERDIR/reflection/work" "$CONTAINERDIR/chroot"
+    elif [ -n $KERNEL_BOOTMODE -a $KERNEL_BOOTMODE = "doublesword" ]; then
+      mkdir -p /persistence/container/overlay/{upper,work} 2>/dev/null
+      echo "Mounting /rofs to the chroot via overlayfs on persistence partition.."
+      mount -t overlay overlay -o "rw,relatime,lowerdir=/rofs,upperdir=/persistence/container/overlay/upper,workdir=/persistence/container/overlay/work" "$CONTAINERDIR/chroot"
+    fi
+    
+    #the following is required to run userland container (mapping host uid/gid to container's uid/gid)
+    echo "Starting bindfs to allow unprivileged user access the container chroot"
+    #bindfs -u $USERSUBUID -g $USERSUBGID -o suid "$CONTAINERDIR/chroot" "$CONTAINERDIR/chroot.user"
+    IDMAP=`( cat /etc/passwd | cut -d: -f3 | awk '{print $1"/"($1+100000)}'; cat /etc/group | cut -d: -f3 | awk '{print "@"$1"/@"($1+100000)}' ) | tr $'\n' ':'| sed 's/:$//'`
+    bindfs --map=$IDMAP -o suid "$CONTAINERDIR/chroot" "$CONTAINERDIR/chroot.user"
+
+    #make necessary changes to the container rootfs
+        touch "$CONTAINERDIR/chroot/this_is_container"
+        rm "$CONTAINERDIR/chroot/this_is_host"
+        rm -rf "$CONTAINERDIR/persistence"
+
+        #recover netplan configurations after possible cloud VM-import
+        echo "Container chroot: recovering *.vmimport netplan configurations (if they exist)"
+        for f in "$CONTAINERDIR"/chroot/etc/netplan/*.vmimport; do mv -v "$f" "${f%%.vmimport}"; done
+
+        #remove internet-indicator service/timer from the container
+        echo "Container chroot: removing internet-indicator from the container"
+        rm -f "$CONTAINERDIR"/chroot/etc/systemd/system/multi-user.target.wants/internet-indicator.*
+        rm -f "$CONTAINERDIR"/chroot/etc/systemd/system/internet-indicator.*
+        
+        #Remove alien netplan configs (usually added by cloud VM-import process)
+        echo "Container chroot: removing all unknown netplan configurations"
+        find "$CONTAINERDIR"/chroot/etc/netplan -type f | grep -v '/01-network-container\.yaml$' | xargs rm
+
+        #disable openvpn settings and files..
+        echo "Container chroot: disable openvpn auto-start"
+        if [ -f "$CONTAINERDIR/chroot/etc/default/openvpn" ]; then
+          sed -i '/^AUTOSTART="[^"]*"$/d' "$CONTAINERDIR/chroot/etc/default/openvpn"
+          echo "AUTOSTART=\"none\"" >> "$CONTAINERDIR/chroot/etc/default/openvpn"
+        fi
+        if [ -d "$CONTAINERDIR/chroot/etc/openvpn/client" ]; then
+          rm -rf "$CONTAINERDIR"/chroot/etc/openvpn/client/*
+        fi
+
+        #disable wireguard settings and files..
+        echo "Container chroot: removing wireguard files"
+        if [ -d "$CONTAINERDIR/chroot/etc/wireguard" ]; then
+          rm -rf "$CONTAINERDIR"/chroot/etc/wireguard/*
+        fi
+
+        #re-enable ssh service
+        echo "Container chroot: enable SSH service"
+        rm "$CONTAINERDIR/chroot/etc/ssh/sshd_not_to_be_run"
+
+        #customize ssh banner
+        sed -i 's/^\(VersionAddendum.*\)\( (host)\| (container)\)?$/\1 (container)/' "$CONTAINERDIR/chroot/etc/ssh/sshd_config.d/banner.conf"
+
+        #remove host iptables setup script
+        echo "Container chroot: remove host-iptables script"
+        rm "$CONTAINERDIR/chroot/sbin/host-iptables"
+
+        #remove host setup script
+        echo "Container chroot: remove host-setup script"
+        rm "$CONTAINERDIR/chroot/sbin/host-setup" "$CONTAINERDIR/chroot/etc/systemd/system/host-setup.service" "$CONTAINERDIR/chroot/etc/systemd/system/multi-user.target.wants/host-setup.service"
+
+        #remove memory watchdog
+        echo "Container chroot: remove memory watchdog"
+        rm "$CONTAINERDIR/chroot/sbin/memwatchdog.sh" "$CONTAINERDIR/chroot/etc/systemd/system/memwatchdog.service" "$CONTAINERDIR/chroot/etc/systemd/system/multi-user.target.wants/memwatchdog.service"
+
+        #remove <PROJECTSHORTNAME>-manage startup
+        echo "Container chroot: remove management tool"
+        rm "$CONTAINERDIR/chroot/etc/systemd/system/<PROJECTSHORTNAME>-manage.service"
+        rm "$CONTAINERDIR/chroot/usr/share/<PROJECTNAME>/<PROJECTSHORTNAME>-manage.service"
+        rm "$CONTAINERDIR/chroot/etc/systemd/system/multi-user.target.wants/<PROJECTSHORTNAME>-manage.service"
+
+        #remove the historian service from the guest
+        echo "Container chroot: remove historian daemon"
+        rm "$CONTAINERDIR/chroot/etc/systemd/system/historian.service"
+        rm "$CONTAINERDIR/chroot/sbin/historian.sh"
+        rm "$CONTAINERDIR/chroot/etc/systemd/system/multi-user.target.wants/historian.service"
+
+        #remove privexec service from the guest
+        echo "Container chroot: remove privexec daemon"
+        rm "$CONTAINERDIR/chroot/etc/systemd/system/privexec.service"
+        rm "$CONTAINERDIR/chroot/sbin/privexecd.sh"
+        rm "$CONTAINERDIR/chroot/etc/systemd/system/multi-user.target.wants/privexec.service"
+
+        #remove supervised service from the guest
+        echo "Container chroot: remove supervised daemon"
+        rm "$CONTAINERDIR/chroot/etc/systemd/system/supervise.service"
+        rm "$CONTAINERDIR/chroot/sbin/supervised.sh"
+        rm "$CONTAINERDIR/chroot/etc/systemd/system/multi-user.target.wants/supervise.service"
+
+        #remove wpa_supplicant links to prevent it from start on the container
+        echo "Container chroot: disable wpa_supplicant autostart"
+        rm "$CONTAINERDIR/chroot/etc/systemd/system/dbus-fi.w1.wpa_supplicant1.service"
+        rm "$CONTAINERDIR/chroot/etc/systemd/system/multi-user.target.wants/wpa_supplicant.service"
+
+        #prepare guest-host communication directory (guest-host IPC)
+        echo "Container chroot: make IPC directory"
+        mkdir -p "$CONTAINERDIR/ipc" 2>&-
+        mkdir -p "$CONTAINERDIR/chroot/var/host/ipc" 2>&-
+
+        #prepare shared mounts directory (useful for some loopback mounts via supervised commands)
+        echo "Prepare shared mount directory."
+        mkdir -p "/mnt/container" 2>&-
+        mkdir -p "$CONTAINERDIR/chroot/mnt/host" 2>&-
+
+        #prepare and mount historian compressed RAM filesystem for logs
+        echo "Container chroot: make zram device, format and mount to historian dir"
+        modprobe zram num_devices=1 
+        sudo blockdev --setrw /dev/zram0
+        echo $HISTORIAN_ZRAM_SIZE > /sys/block/zram0/disksize # max RAM usage
+        mke2fs -q -m 0 -b 4096 -O sparse_super -L zram /dev/zram0
+        mount -o relatime,noexec,nosuid /dev/zram0 "$CONTAINERDIR/history"
+        mkdir -p "$CONTAINERDIR/history/log" 2>&-
+
+        #create system-wide overriding profile for container to enable historian feature
+        echo "Container chroot: create default user profile to enable historian in the container"
+        cat "$CONTAINERDIR/chroot/etc/profile" "/usr/share/<PROJECTNAME>/etc/historian.profile" > "$CONTAINERDIR/history/.profile"
+
+        #Add mount.priv and umount.priv tools for privileged disk operations
+        echo "Container chroot: add privileged mount commands"
+        ln -s /usr/bin/privexec "$CONTAINERDIR/chroot/bin/mount.priv"
+        ln -s /usr/bin/privexec "$CONTAINERDIR/chroot/bin/umount.priv"
+
+        #Create guest prompt color script
+        echo "Container chroot: change user shell prompt"
+        sed -i 's,\\\[\\e\[1;37;41m\\\]\\h,\\[\\e[1;37;44m\\]\\h,g' "$CONTAINERDIR/chroot/etc/bash.bashrc" "$CONTAINERDIR/chroot/etc/skel/.bashrc"
+
+
+    #remove privexec client from the host
+    echo "Remove privexec client" 
+    rm /usr/bin/privexec
+
+    #recover netplan configurations after possible cloud VM-import
+    echo "Recovering *.vmimport netplan configurations (if they exist)"
+    for f in /etc/netplan/*.vmimport; do mv -v "$f" "${f%%.vmimport}"; done
+    
+    #Remove alien netplan configs (usually added by cloud VM-import process)
+    echo "Removing all unknown netplan configurations"
+    find /etc/netplan -type f | grep -v '/01-network-host\.yaml$' | xargs rm
+
+    #create set of virtual mapping device for container:
+    echo "Create evidence and storage loop block devices"
+    DEVDIR="/dev/container"
+    mkdir -p "$DEVDIR"
+    for((i=0;i<10;i++)) #this set of devices is suggested for readonly use
+    do
+      if [ -b "$DEVDIR/evidence$i" ]; then continue; fi;
+      mknod "$DEVDIR/evidence$i" b 7 $[8+$i]
+      mknod /dev/loop$[8+$i] b 7 $[8+$i]
+      mknod $CONTAINERDIR/chroot/dev/loop$[8+$i] b 7 $[8+$i]
+    done 
+
+    for((i=0;i<10;i++)) #this set of devices is suggested for read-write access
+    do
+      if [ -b "$DEVDIR/storage$i" ]; then continue; fi;
+      mknod "$DEVDIR/storage$i" b 7 $[18+$i]
+      mknod /dev/loop$[18+$i] b 7 $[18+$i]
+      mknod $CONTAINERDIR/chroot/dev/loop$[18+$i] b 7 $[18+$i]
+    done 
+
+    #load nbd kernel module and copy 3 of them to the container
+    echo "Create few nbd devices"
+    modprobe nbd
+    for((i=0;i<3;i++))
+    do
+      stat -c "%t %T" /dev/nbd$i | awk '{print "0x"$1" 0x"$2}' | xargs mknod /dev/container/nbd$i b
+    done
+    chown 100000:100000 /dev/container/*
+    chmod o+rw /dev/container/nbd*
+
+    #duplicate created block devices to /opt/container/chroot/dev to allow mount.priv to use them
+    cp -rv /dev/container /opt/container/chroot/dev/host
+
+    #Start systemd-nspawn container
+    echo "Preparing to start container.."
+    
+    #creating dnsmasq config files
+    echo "Create dnsmasq config files"
+    echo "dhcp-hostsfile=/etc/dnsmasq-$CONTAINERNET_NAME.hosts
+dhcp-option=6,$CONTAINERNET_GUEST_DNS" > /etc/dnsmasq-$CONTAINERNET_NAME.conf
+    echo "$PROJECTNAME,$CONTAINERNET_GUEST_IP" > "/etc/dnsmasq-$CONTAINERNET_NAME.hosts"
+
+    echo "Checking if KVM is available (for nested hardware virtualization support)."
+    if [ ! -c /dev/kvm ]
+    then
+      echo "/dev/kvm was not found. Removing it from container config."
+      sed -i '/Bind=\/dev\/kvm/d' /etc/systemd/nspawn/container.nspawn
+    else
+      echo "Enabling access to /dev/kvm to all users.."
+      chmod o+rw /dev/kvm
+    fi
+ 
+    echo "Checking if CDROM is available."
+    if [ ! -b /dev/sr0 ]
+    then
+      echo "/dev/sr0 was not found. Removing it from container config."
+      sed -i '/Bind=\/dev\/sr0/d' /etc/systemd/nspawn/container.nspawn
+    else
+      echo "Enabling access to /dev/sr0 to all users.."
+      chmod o+rw /dev/sr0
+    fi
+ 
+    if [ "$AUTOMOUNT" != "off" ]; then
+      echo "Starting auto-mount procedure.."
+      if [ "$AUTOMOUNT" == "all" ]; then
+        IDMAP=`( cat /etc/passwd | cut -d: -f3 | awk '{print $1"/"($1+100000)}'; cat /etc/group | cut -d: -f3 | awk '{print "@"$1"/@"($1+100000)}' ) | tr $'\n' ':'| sed 's/:$//'`
+        i=0
+        ROOTDEV=$( blkid -t $ROOTDEVID -l -o device )
+        ROOTDEVSRC="/dev/$( lsblk -n -o PKNAME $ROOTDEV )"
+        lsblk --pair --paths -o MOUNTPOINT,NAME,FSTYPE | grep -vE "/dev/zram[0-9]*|${ROOTDEVSRC}|/dev/nbd[0-9]*|/dev/sr[0-9]*" | while read blkline; do
+          eval "$blkline"
+          NAME=${NAME##*/}
+          echo -n "Attempting to map /dev/$NAME device to /dev/container/evidence$i.. "
+          if losetup -r /dev/loop$[8+$i] /dev/$NAME 2>/dev/null; then
+            echo "OK"
+            if echo "$FSTYPE" | grep -qE "(vfat|ext2|ext3|ext4|ntfs|exfat|iso9660)"; then
+              echo -n " Attempting to mount /dev/container/$NAME to /mnt/container/$NAME.. "
+	            mkdir -p /mnt/$NAME /mnt/container/$NAME 2>/dev/null;
+              case $FSTYPE in
+                'ext2') 
+                        mount -o ro,nosuid,noexec,nodev /dev/loop$[8+$i] /mnt/$NAME;;
+                'ext3'|'ext4') 
+                        mount -o ro,nosuid,noexec,nodev,noload /dev/loop$[8+$i] /mnt/$NAME;;
+                'ntfs') mount -o ro,show_sys_files,streams_interface=windows,norecover /dev/loop$[8+$i] /mnt/$NAME;;
+                *) mount -o ro /dev/loop$[8+$i] /mnt/$NAME;;
+              esac
+              bindfs --map=$IDMAP -o nosuid,noexec,nodev "/mnt/$NAME" "/mnt/container/$NAME";
+            fi
+            if mount | grep -q '^/dev/loop$[8+$i]'; then
+              echo "OK"
+              ((i++))
+            else
+              echo "Failed"
+              echo "Reverting the device mapping..."
+              losetup -d /dev/loop$[8+$i]
+            fi
+  
+            if [ $i -ge 10 ]; then 
+              echo "Reached max evidence device count. Cannot automount anymore.."
+              break
+            fi
+          else
+            echo "Failed"
+          fi
+        done
+      fi
+      echo "Automounting finished."
+    fi
+
+    #customize ssh banner
+    sed -i "s/^\(VersionAddendum.*\)$/\1 (container)/" "$CONTAINERDIR/chroot/etc/ssh/sshd_config.d/banner.conf"
+
+    #start the container after all
+    #SPAWNCMD="systemd-nspawn -M container --network-veth --private-users=100000:65536 --bind=/mnt/container:/mnt/host --bind=/dev/container:/dev/host --bind=/dev/fuse --property DeviceAllow='/dev/fuse rwm' $NSPAWN_EXTRA_OPTIONS -D /opt/container/chroot.user /sbin/init"
+    #echo -e "Spawning container with the following commandline:\n$SPAWNCMD"
+    #eval "$SPAWNCMD"
+  fi
+fi
+
+if [ "$1" == "stop" ]
+then
+  echo "Stopping the container"
+  if mount | grep -q "$CONTAINERDIR/reflection"
+  then
+    sudo machinectl stop container
+    umount "$CONTAINERDIR/chroot.user"
+    umount "$CONTAINERDIR/chroot"
+    umount "$CONTAINERDIR/reflection"
+    if [ "$CONTAINERDIR" != "/" -a -n "$CONTAINERDIR" ]
+    then
+      rm -rf "$CONTAINERDIR"
+    fi
+  fi
+fi
+

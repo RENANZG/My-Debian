@@ -1,0 +1,14 @@
+[Unit]
+Description=Host system setup
+Requires=local-fs.target
+Before=systemd-machined.service
+After=local-fs.target NetworkManager.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/sbin/host-setup start
+ExecStop=/sbin/host-setup stop
+
+[Install]
+WantedBy=multi-user.target

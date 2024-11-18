@@ -1,0 +1,19 @@
+#!/bin/bash
+
+#Exit if the script was started on the host system.
+#It must be run only within container!
+if [ $# -eq 0 ]
+then
+ echo "Usage $1 [start|stop]"
+fi
+
+if [ "$1" == "start" ]
+then
+  locale-gen en_US.UTF-8
+fi
+
+#if [ "$1" == "stop" ]
+#then
+#  umount /tmp
+#fi
+

@@ -1,0 +1,13 @@
+# This file describes eth0 network interface available on your system
+# For more information, see netplan(5).
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    ethX:
+      match:
+        name: eth*
+      dhcp4: yes
+    ve-container:
+      dhcp4: no
+      addresses: [10.3.0.1/24]

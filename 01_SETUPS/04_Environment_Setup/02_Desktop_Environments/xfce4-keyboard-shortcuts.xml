@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Name Shortcuts Consistently -->
+<!-- Group Similar Functionalities -->
+<!-- Avoid Conflicts -->
+<channel name="xfce4-keyboard-shortcuts" version="1.0">
+    <!-- Core System Shortcuts -->
+    <property name="commands" type="empty">
+        <property name="default" type="empty">
+            <!-- Application Launchers -->
+            <property name="&lt;Alt&gt;F1" type="empty" value="xfce4-popup-applicationsmenu"/>
+            <property name="&lt;Alt&gt;F2" type="empty" value="xfce4-appfinder"/>
+            <property name="&lt;Super&gt;r" type="empty" value="xfce4-appfinder --collapsed"/></property>
+        <!-- System Utilities -->
+        <property name="&lt;Primary&gt;&lt;Alt&gt;Delete" type="empty" value="xfce4-taskmanager"/>
+        <property name="&lt;Primary&gt;&lt;Alt&gt;l" type="empty" value="xflock4"/>
+        <property name="&lt;Primary&gt;&lt;Alt&gt;t" type="empty" value="xfce4-terminal"/>
+        <property name="&lt;Primary&gt;Escape" type="empty" value="xkill"/>
+        <property name="&lt;Primary&gt;&lt;Alt&gt;Escape" type="empty" value="xfce4-taskmanager"/>
+        <property name="&lt;Primary&gt;&lt;Shift&gt;Escape" type="empty" value="xfce4-taskmanager"/>
+        <!-- Display Management -->
+        <property name="XF86Display" type="empty" value="xrandr"/>
+        <property name="&lt;Super&gt;p" type="empty" value="xfce4-display-settings --minimal"/>
+        <!-- Web and Communication -->
+        <property name="XF86WWW" type="empty" value="firefox"/>
+        <property name="HomePage" type="empty" value="firefox https://startpage.com"/>
+        <property name="XF86Mail" type="empty" value="thunderbird"/>
+        <!-- File Management -->
+        <property name="&lt;Super&gt;e" type="empty" value="thunar"/>
+        <property name="&lt;Primary&gt;&lt;Alt&gt;f" type="empty" value="xfce4-file-manager"/>
+        <!-- Screenshot Tools -->
+        <property name="Print" type="empty" value="xfce4-screenshooter"/>
+        <property name="&lt;Alt&gt;Print" type="empty" value="xfce4-screenshooter -r"/>
+        <property name="&lt;Shift&gt;Print" type="empty" value="xfce4-screenshooter -f"/></property>
+    <!-- System Settings -->
+    <property name="&lt;Alt&gt;&lt;Super&gt;s" type="empty" value="xfce4-settings-manager"/>
+    <!-- Window Management Shortcuts -->
+    <property name="xfwm4" type="empty">
+        <property name="default" type="empty">
+            <property name="&lt;Alt&gt;Insert" type="empty" value="new_window"/>
+            <property name="Escape" type="empty" value="cancel"/>
+            <property name="Left" type="empty" value="move_left"/>
+            <property name="Right" type="empty" value="move_right"/>
+            <property name="Up" type="empty" value="move_up"/>
+            <property name="Down" type="empty" value="move_down"/>
+            <property name="&lt;Alt&gt;Tab" type="empty" value="switch_window"/>
+            <property name="&lt;Alt&gt;&lt;Shift&gt;Tab" type="empty" value="switch_window_reverse"/>
+            <property name="&lt;Alt&gt;Delete" type="empty" value="delete_window"/>
+            <property name="&lt;Primary&gt;&lt;Alt&gt;Down" type="empty" value="tile_window_down"/>
+            <property name="&lt;Primary&gt;&lt;Alt&gt;Left" type="empty" value="tile_window_left"/>
+            <property name="&lt;Shift&gt;&lt;Alt&gt;Page_Down" type="empty" value="tile_window_page_down"/>
+            <property name="&lt;Alt&gt;F4" type="empty" value="close_window"/>
+            <property name="&lt;Alt&gt;F6" type="empty" value="raise_window"/>
+            <property name="&lt;Alt&gt;F7" type="empty" value="lower_window"/>
+            <property name="&lt;Alt&gt;F8" type="empty" value="move_window"/>
+            <property name="&lt;Alt&gt;F9" type="empty" value="resize_window"/>
+            <property name="&lt;Alt&gt;F10" type="empty" value="maximize_window"/>
+            <property name="&lt;Alt&gt;F11" type="empty" value="fullscreen_window"/>
+            <property name="&lt;Alt&gt;F12" type="empty" value="minimize_window"/>
+            <property name="&lt;Primary&gt;&lt;Shift&gt;&lt;Alt&gt;Left" type="empty" value="move_window_left"/>
+            <property name="&lt;Primary&gt;&lt;Alt&gt;End" type="empty" value="move_window_end"/>
+            <property name="&lt;Primary&gt;&lt;Alt&gt;Home" type="empty" value="move_window_home"/>
+            <property name="&lt;Primary&gt;&lt;Shift&gt;&lt;Alt&gt;Right" type="empty" value="move_window_right"/>
+            <property name="&lt;Primary&gt;&lt;Shift&gt;&lt;Alt&gt;Up" type="empty" value="move_window_up"/>
+            <property name="&lt;Primary&gt;&lt;Alt&gt;KP_1" type="empty" value="tile_window_kp1"/>
+            <property name="&lt;Primary&gt;&lt;Alt&gt;KP_2" type="empty" value="tile_window_kp2"/>
+            <property name="&lt;Primary&gt;&lt;Alt&gt;KP_3" type="empty" value="tile_window_kp3"/>
+            <property name="&lt;Primary&gt;&lt;Alt&gt;KP_4" type="empty" value="tile_window_kp4"/>
+            <property name="&lt;Primary&gt;&lt;Alt&gt;KP_5" type="empty" value="tile_window_kp5"/>
+            <property name="&lt;Primary&gt;&lt;Alt&gt;KP_6" type="empty" value="tile_window_kp6"/>
+            <property name="&lt;Primary&gt;&lt;Alt&gt;KP_7" type="empty" value="tile_window_kp7"/>
+            <property name="&lt;Primary&gt;&lt;Alt&gt;KP_8" type="empty" value="tile_window_kp8"/>
+            <property name="&lt;Primary&gt;&lt;Alt&gt;KP_9" type="empty" value="tile_window_kp9"/>
+            <property name="&lt;Alt&gt;space" type="empty" value="show_menu"/>
+            <property name="&lt;Shift&gt;&lt;Alt&gt;Page_Up" type="empty" value="move_window_page_up"/>
+            <property name="&lt;Primary&gt;&lt;Alt&gt;Right" type="empty" value="tile_window_right"/>
+            <property name="&lt;Primary&gt;&lt;Alt&gt;d" type="empty" value="tile_window_d"/>
+            <property name="&lt;Primary&gt;&lt;Alt&gt;Up" type="empty" value="tile_window_up"/>
+            <property name="&lt;Super&gt;Tab" type="empty" value="switch_application"/>
+            <property name="&lt;Primary&gt;F1" type="empty" value="help"/>
+            <property name="&lt;Primary&gt;F2" type="empty" value="rename"/>
+            <property name="&lt;Primary&gt;F3" type="empty" value="search"/>
+            <property name="&lt;Primary&gt;F4" type="empty" value="close_tab"/>
+            <property name="&lt;Primary&gt;F5" type="empty" value="refresh"/>
+            <property name="&lt;Primary&gt;F6" type="empty" value="focus_address_bar"/>
+            <property name="&lt;Primary&gt;F7" type="empty" value="caret_browsing"/>
+            <property name="&lt;Primary&gt;F8" type="empty" value="developer_tools"/>
+            <property name="&lt;Primary&gt;F9" type="empty" value="toggle_toolbar"/>
+            <property name="&lt;Primary&gt;F10" type="empty" value="menu_bar"/>
+            <property name="&lt;Primary&gt;F11" type="empty" value="fullscreen"/>
+            <property name="&lt;Primary&gt;F12" type="empty" value="dev_tools"/>
+            <property name="&lt;Super&gt;KP_Left" type="empty" value="move_to_left_screen"/>
+            <property name="&lt;Super&gt;KP_Right" type="empty" value="move_to_right_screen"/>
+            <property name="&lt;Super&gt;KP_Down" type="empty" value="move_to_down_screen"/>
+            <property name="&lt;Super&gt;KP_Up" type="empty" value="move_to_up_screen"/>
+            <property name="&lt;Super&gt;KP_Page_Up" type="empty" value="move_to_previous_screen"/>
+            <property name="&lt;Super&gt;KP_Home" type="empty" value="move_to_home_screen"/>
+            <property name="&lt;Super&gt;KP_End" type="empty" value="move_to_end_screen"/>
+            <property name="&lt;Super&gt;KP_Next" type="empty" value="move_to_next_screen"/></property>
+        <!-- Custom Shortcuts -->
+        <property name="custom" type="empty">
+            <property name="&lt;Alt&gt;F4" type="string" value="close_window_key"/>
+            <property name="Right" type="string" value="right_key"/>
+            <property name="Down" type="string" value="down_key"/>
+            <property name="&lt;Alt&gt;Tab" type="string" value="cycle_windows_key"/>
+            <property name="Up" type="string" value="up_key"/>
+            <property name="Escape" type="string" value="cancel_key"/>
+            <property name="&lt;Alt&gt;&lt;Shift&gt;Tab" type="string" value="cycle_reverse_windows_key"/>
+            <property name="Left" type="string" value="left_key"/>
+            <property name="override" type="bool" value="true"/>
+            <property name="&lt;Shift&gt;&lt;Super&gt;m" type="string" value="maximize_window_key"/>
+            <property name="&lt;Super&gt;m" type="string" value="hide_window_key"/>
+            <property name="&lt;Alt&gt;&lt;Super&gt;space" type="string" value="resize_window_key"/>
+            <property name="&lt;Alt&gt;&lt;Super&gt;Control_L" type="string" value="move_window_key"/>
+            <property name="&lt;Shift&gt;&lt;Alt&gt;exclam" type="string" value="move_window_workspace_1_key"/>
+            <property name="&lt;Shift&gt;&lt;Alt&gt;at" type="string" value="move_window_workspace_2_key"/>
+            <property name="&lt;Shift&gt;&lt;Alt&gt;numbersign" type="string" value="move_window_workspace_3_key"/>
+            <property name="&lt;Shift&gt;&lt;Alt&gt;dollar" type="string" value="move_window_workspace_4_key"/>
+            <property name="&lt;Primary&gt;&lt;Super&gt;Up" type="string" value="tile_up_key"/>
+            <property name="&lt;Primary&gt;&lt;Super&gt;Down" type="string" value="tile_down_key"/>
+            <property name="&lt;Primary&gt;&lt;Super&gt;Left" type="string" value="tile_left_key"/>
+            <property name="&lt;Primary&gt;&lt;Super&gt;Right" type="string" value="tile_right_key"/>
+            <property name="&lt;Super&gt;d" type="string" value="show_desktop_key"/>
+            <property name="&lt;Primary&gt;&lt;Alt&gt;1" type="string" value="workspace_1_key"/>
+            <property name="&lt;Primary&gt;&lt;Alt&gt;2" type="string" value="workspace_2_key"/>
+            <property name="&lt;Primary&gt;&lt;Alt&gt;3" type="string" value="workspace_3_key"/>
+            <property name="&lt;Primary&gt;&lt;Alt&gt;4" type="string" value="workspace_4_key"/>
+            <property name="&lt;Shift&gt;&lt;Super&gt;Up" type="string" value="fill_window_key"/>
+            <property name="&lt;Primary&gt;&lt;Alt&gt;Left" type="string" value="prev_workspace_key"/>
+            <property name="&lt;Primary&gt;&lt;Alt&gt;Right" type="string" value="next_workspace_key"/>
+            <property name="&lt;Shift&gt;&lt;Alt&gt;Right" type="string" value="move_window_next_workspace_key"/>
+            <property name="&lt;Shift&gt;&lt;Alt&gt;Left" type="string" value="move_window_prev_workspace_key"/>
+            <property name="&lt;Primary&gt;&lt;Shift&gt;&lt;Alt&gt;Right" type="string" value="move_window_to_monitor_right_key"/>
+            <property name="&lt;Primary&gt;&lt;Shift&gt;&lt;Alt&gt;Up" type="string" value="move_window_to_monitor_up_key"/>
+            <property name="&lt;Shift&gt;ISO_Left_Tab" type="string" value="switch_window_key"/>
+            <property name="&lt;Super&gt;Tab" type="string" value="switch_application_key"/>
+            <property name="&lt;Primary&gt;&lt;Shift&gt;&lt;Alt&gt;Left" type="string" value="move_window_to_monitor_left_key"/>
+            <property name="&lt;Primary&gt;&lt;Shift&gt;&lt;Alt&gt;Down" type="string" value="move_window_to_monitor_down_key"/>
+            <property name="&lt;Primary&gt;&lt;Super&gt;2" type="string" value="tile_up_right_key"/>
+            <property name="&lt;Primary&gt;&lt;Super&gt;3" type="string" value="tile_down_left_key"/>
+            <property name="&lt;Primary&gt;&lt;Super&gt;4" type="string" value="tile_down_right_key"/>
+            <property name="&lt;Primary&gt;&lt;Super&gt;1" type="string" value="tile_up_left_key"/>
+            <property name="XF86AudioNext" type="string" value="dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Next"/>
+            <property name="XF86AudioPrev" type="string" value="dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Previous"/>
+            <property name="XF86AudioPlay" type="string" value="dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.PlayPause"/>
+            <property name="XF86AudioStop" type="string" value="dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Stop"/></property>
+    </property>
+    <!-- Specify the providers used for these shortcuts -->
+    <property name="providers" type="array">
+        <value type="string" value="xfwm4"/>
+    </property>
+</channel>

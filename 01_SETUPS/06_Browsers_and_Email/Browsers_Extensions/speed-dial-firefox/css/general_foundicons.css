@@ -1,0 +1,48 @@
+/* font-face */
+@font-face {
+  font-family: "GeneralFoundicons";
+  src: url("../fonts/general_foundicons.woff");
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* global foundicon styles */
+[class*="foundicon-"] {
+  display: inline;
+  width: auto;
+  height: auto;
+  font-size: medium;
+  line-height: inherit;
+  vertical-align: baseline;
+  background-image: none;
+  background-position: 0 0;
+  background-repeat: repeat;
+}
+
+[class*="foundicon-"]:before {
+  font-family: "GeneralFoundicons";
+  font-weight: normal;
+  font-style: normal;
+  text-decoration: inherit;
+}
+
+/* icons */
+.foundicon-settings:before {
+  content: "\f000";
+}
+
+.foundicon-plus:before {
+  content: "\f003";
+}
+
+.foundicon-remove:before {
+  content: "\f006";
+}
+
+.foundicon-edit:before {
+  content: "\f01a";
+}
+
+.foundicon-folder:before {
+  content: "\f02a";
+}

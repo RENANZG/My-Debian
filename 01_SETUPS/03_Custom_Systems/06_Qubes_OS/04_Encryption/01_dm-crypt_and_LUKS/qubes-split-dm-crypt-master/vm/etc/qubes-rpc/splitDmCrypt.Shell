@@ -1,0 +1,11 @@
+#!/bin/bash
+set -e -o pipefail
+
+PATH=/usr/local/etc:/etc source split-dm-crypt.conf
+
+set -x
+cd "$TEMP_DIR"
+ls
+{ set +x; } 2>/dev/null
+
+script --quiet --return /dev/null  # fake terminal

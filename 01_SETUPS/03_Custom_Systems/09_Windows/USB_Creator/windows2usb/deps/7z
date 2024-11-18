@@ -1,0 +1,5 @@
+#!/bin/sh
+HERE="$(dirname "$(readlink -f "${0}")")"
+# autofsync library to prevent bufferbloat
+export LD_PRELOAD="$HERE/autofsync.so"
+exec "${HERE}/7z-real" "$@"

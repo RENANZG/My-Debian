@@ -1,0 +1,42 @@
+servers = (
+  { address = "<IRC_SERVER>"; port = "<IRC_PORT>"; autoconnect = "yes"; chatnet="main"; }
+);
+
+chatnets = { main = { type = "IRC";}; };
+
+channels = (
+  { name = "#main"; chatnet="main"; autojoin = "Yes"; }
+);
+
+settings = {
+    core = {
+        real_name = "owner";
+        user_name = "owner";
+        nick = "owner";
+    };
+
+    "fe-text" = {
+        actlist_sort = "refnum";
+        term_force_colors = "yes";
+    };
+    "fe-common/core" = {
+        autolog = "yes";
+        autolog_path = "/var/log/irssi/irc_$1.$0.%F.log";
+    };
+};
+
+windows = {
+  1 = { immortal = "yes"; name = "(status)"; level = "ALL"; };
+  2 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#main";
+        tag = "main";
+      }
+    );
+  };
+};
+
+mainwindows = { 2 = { first_line = "1"; lines = "22"; } };

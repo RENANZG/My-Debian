@@ -1,0 +1,53 @@
+/* Style for body */
+body {
+  padding-bottom: 64px;
+}
+/* Style for <pre> tags */
+pre {
+  white-space: pre-wrap;
+  padding: 10px; /* Add padding for spacing */
+  background-color: #f7f7f7; /* Light background color */
+  border: 1px solid #ccc; /* Optional: Add a border for clarity */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Shadow for the whole <pre> */
+}
+/* Style for <code> tags inside <pre> */
+pre code {
+  display: block;
+  background-color: inherit; /* Inherit background color from <pre> */
+  color: #393318;
+  font-family: monospace;
+  padding: 5px 10px;
+  border-radius: 3px; /* Optional: Rounded corners for <code> */
+}
+/* Style for tables */
+table {
+  border: 1px solid #000; /* Add borders to all tables */
+  width: 100%; /* Optional: Ensure table width spans full container */
+  border-collapse: collapse; /* Collapse table borders */
+}
+/* Optional: Style for table headers */
+table th {
+  border: 1px solid #000; /* Ensure headers have borders */
+  background-color: #f2f2f2; /* Light background color for headers */
+  padding: 8px; /* Padding for header cells */
+}
+/* Optional: Style for table cells */
+table td {
+  border: 1px solid #000; /* Ensure cells have borders */
+  padding: 8px; /* Padding for table cells */
+}
+/* Dark mode styles */
+body[data-mode="dark"] pre code {
+  background-color: #585858;
+  color: #e8e8e8;
+}
+/* CSS for sans-serif fonts */
+body[data-font=sans-serif] {}
+/* CSS for serif fonts */
+body[data-font=serif] {}
+/* CSS for "sepia" theme */
+body[data-mode=sepia] {}
+/* CSS for "light" theme */
+body[data-mode=light] {}
+/* CSS for "dark" theme */
+body[data-mode=dark] {}

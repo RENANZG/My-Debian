@@ -1,0 +1,83 @@
+#!/bin/sh
+
+# set -e
+
+export PATH=/usr/bin:/usr/sbin:/bin:/sbin
+
+echo "Doublesword is starting.."
+parse_cmdline()
+{
+  for x in $(cat /proc/cmdline); do
+    case $x in
+     root=*) export ROOTDEVID="${x#root=}";;
+     persist=*) export PERSDEVID="${x#persist=}";;
+     persistmode=*) export PERSISTMODE="${x#persistmode=}";;
+    esac
+  done
+}
+
+emergency_shell() {
+  echo "Something bad happened. Starting emergency shell.."
+  /bin/sh -i
+}
+
+mountroot()
+{
+  if [ -z "$ROOTDEVID" ]; then
+    echo "Error: \"root\" kernel argument is not specified."
+    emergency_shell
+  fi
+
+	# Scan local devices for the image
+  echo "Searching for root device: $ROOTDEVID"
+	i=0
+	while [ "$i" -lt 60 ]; do
+    ROOTDEV=$( blkid -t $ROOTDEVID -l -o device )
+		if [ -n "$ROOTDEV" ]; then
+			break
+		fi
+    udevadm settle --timeout 1 2>/dev/null
+		sleep 1
+		i="$(($i + 1))"
+	done
+
+  if [ -z "$ROOTDEV" ]; then
+    echo "Error: Failed to locate root device ($ROOTDEVID)."
+    emergency_shell
+  fi
+
+  echo "Searching for persistence device: $PERSDEVID"
+  if [ $( echo $PERSDEVID | cut -c1-5) = "UUID=" ]; then
+    PERSDEV=$( blkid -t $PERSDEVID -l -o device )  
+  fi
+
+  if [ -z "$PERSDEV" ]; then
+    echo "Error: Failed to locate persistence device ($PERSDEVID)."
+    emergency_shell
+  fi
+
+  mkdir /rofs /persistence
+  mount -o rw $PERSDEV /persistence
+  [ -n $PERSISTMODE -a $PERSISTMODE = "cleanup" ] && rm -rf /persistence/*
+  if [ ! -d "/persistence/host/overlay" ]; then
+    mkdir -p /persistence/host/overlay/upper 2>/dev/null
+    mkdir -p /persistence/host/overlay/work 2>/dev/null
+  fi
+  if [ ! -d "/persistence/container/overlay" ]; then
+    mkdir -p /persistence/container/overlay/upper 2>/dev/null
+    mkdir -p /persistence/container/overlay/work 2>/dev/null
+  fi
+
+  mount -o ro $ROOTDEV /rofs
+  mount -t overlay overlay -o lowerdir=/rofs,upperdir=/persistence/host/overlay/upper,workdir=/persistence/host/overlay/work /root
+  mount --move /persistence /root/persistence
+  mount --move /rofs /root/rofs
+
+  echo "PERSISTENCE_DEVICE=$PERSDEV" > /root/etc/wrtblk.conf
+  /root/bin/chown 0:0 /root
+}
+
+parse_cmdline
+mountroot
+
+#/bin/sh -i

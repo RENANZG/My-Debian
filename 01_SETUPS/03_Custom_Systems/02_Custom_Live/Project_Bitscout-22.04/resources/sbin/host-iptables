@@ -1,0 +1,151 @@
+#!/bin/bash
+
+IPT="/sbin/iptables"
+#List all eth* and wlan* interfaces and add to INET_IFACES array:
+I=0; while read INET_IFACE; do INET_IFACES[$I]="$INET_IFACE";((I++));done  < <(ls -1 /sys/class/net/ |grep -E '^(eth|wlan)' )
+CONTAINER_IFACE=<CONTAINERNET_NAME>
+CONTAINER_IP=<CONTAINERNET_GUEST_IP>
+VPN_IFACE=<PROJECTSHORTNAME>
+
+if [ $# -eq 0 ]
+then  #default for no parameters. executed during system boot.
+  # Required to enable IPv4 forwarding.
+  # Redhat users can try setting FORWARD_IPV4 in /etc/sysconfig/network to true
+  # Alternatively, it can be set in /etc/sysctl.conf
+  if [ "$SYSCTL" = "" ]
+  then
+      echo "1" > /proc/sys/net/ipv4/ip_forward
+  else
+      $SYSCTL net.ipv4.ip_forward="1"
+  fi
+  
+  # This enables dynamic address hacking.
+  # This may help if you have a dynamic IP address \(e.g. slip, ppp, dhcp\).
+  if [ "$SYSCTL" = "" ]
+  then
+      echo "1" > /proc/sys/net/ipv4/ip_dynaddr
+  else
+      $SYSCTL net.ipv4.ip_dynaddr="1"
+  fi
+  
+  # Flush old rules, old custom tables
+  $IPT --flush
+  $IPT --delete-chain
+  
+  # Flush all rules
+  $IPT -F
+  $IPT -t nat -F
+  $IPT -t mangle -F
+  
+  # Erase all non-default chains
+  $IPT -X
+  $IPT -t nat -X
+  $IPT -t mangle -X
+  
+  # Set default policies for all three default chains
+  $IPT -P INPUT DROP
+  $IPT -P FORWARD DROP
+  $IPT -P OUTPUT ACCEPT
+  
+  
+  # Create new tables for port forwarding and host incoming connections
+  $IPT -t nat -N CONTAINER_INCOMING
+  $IPT -N HOST_INCOMING
+  
+  # Enable free use of loopback interfaces
+  $IPT -A INPUT -i lo -j ACCEPT
+  $IPT -A OUTPUT -o lo -j ACCEPT
+  
+  #Incoming host connections
+  $IPT -A HOST_INCOMING -p tcp --dport 23 -j ACCEPT
+  $IPT -A HOST_INCOMING -j RETURN
+  
+  
+  # All TCP sessions should begin with SYN
+  $IPT -A INPUT -p tcp ! --syn -m state --state NEW -s 0.0.0.0/0 -j DROP
+  
+  # Accept inbound ICMP messages
+  $IPT -A INPUT -p ICMP --icmp-type 8 -s 0.0.0.0/0 -j ACCEPT
+  $IPT -A INPUT -p ICMP --icmp-type 11 -s 0.0.0.0/0 -j ACCEPT
+  
+  #Accept related/established sessions
+  $IPT -A INPUT -p ALL -m state --state ESTABLISHED,RELATED -j ACCEPT
+  
+  #Enable DHCP requests from container
+  $IPT -A INPUT -i $CONTAINER_IFACE -p UDP --destination-port 67 -j ACCEPT
+  
+  $IPT -A INPUT -i $VPN_IFACE -j HOST_INCOMING
+
+   
+  #Enable NAT (container->inet)
+  #TODO: Recheck default isolation
+  for INET_IFACE in ${INET_IFACES[*]}
+  do
+    $IPT -A FORWARD -i $CONTAINER_IFACE -o $INET_IFACE -d 0.0.0.0/0 -j ACCEPT
+    $IPT -A FORWARD -o $CONTAINER_IFACE -i $INET_IFACE -s 0.0.0.0/0 -j ACCEPT
+  done
+  
+  
+  #Setup container port forwarding
+  $IPT -t nat -A CONTAINER_INCOMING -p tcp --dport 22 -j DNAT --to-destination $CONTAINER_IP:22
+  
+  for((i=0;i<10;i++))
+  do
+    $IPT -t nat -A CONTAINER_INCOMING -p tcp --dport $[2000+$i] -j DNAT --to-destination $CONTAINER_IP:$[2000+$i]
+  done
+
+  for((i=0;i<10;i++))
+  do
+    $IPT -t nat -A CONTAINER_INCOMING -p tcp --dport $[5900+$i] -j DNAT --to-destination $CONTAINER_IP:$[5900+$i]
+  done
+
+  $IPT -t nat -A CONTAINER_INCOMING -j RETURN
+
+  
+  #Process connections from VPN interface to container
+  $IPT -t nat -A PREROUTING -i $VPN_IFACE -j CONTAINER_INCOMING
+  
+  $IPT -A FORWARD -i $CONTAINER_IFACE -o $VPN_IFACE -s $CONTAINER_IP -j ACCEPT
+  $IPT -A FORWARD -o $CONTAINER_IFACE -i $VPN_IFACE -d $CONTAINER_IP  -j ACCEPT
+
+  #Enable outgoing traffic from CONTAINER to inet (for updates)  
+  $IPT -A FORWARD -i $CONTAINER_IFACE -j ACCEPT
+  for INET_IFACE in ${INET_IFACES[*]}
+  do
+    $IPT -t nat -A POSTROUTING -o $INET_IFACE -j MASQUERADE
+  done
+
+  $IPT -t nat -A POSTROUTING -o $VPN_IFACE -j MASQUERADE
+
+  exit 0
+fi
+
+
+if [ "$1" = "enable-access-from-lan" ]
+then
+  for INET_IFACE in ${INET_IFACES[*]}
+  do
+    $IPT -t nat -I PREROUTING -i $INET_IFACE -j CONTAINER_INCOMING
+  done
+
+  $IPT -D INPUT -i $VPN_IFACE -j HOST_INCOMING
+  $IPT -I INPUT -j HOST_INCOMING
+  exit 0
+fi
+
+if [ "$1" = "disable-access-from-lan" ]
+then
+  for INET_IFACE in ${INET_IFACES[*]}
+  do
+    $IPT -t nat -D PREROUTING -i $INET_IFACE -j CONTAINER_INCOMING
+  done
+
+  $IPT -D INPUT -j HOST_INCOMING
+  $IPT -I INPUT -i $VPN_IFACE -j HOST_INCOMING
+  exit 0
+fi
+
+if [ "$1" = "check-access-from-lan" ]
+then
+   $IPT -C INPUT -j HOST_INCOMING 2>/dev/null && echo "Access from LAN is ON" || echo "Access from LAN is OFF"
+fi

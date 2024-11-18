@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Icon=none
+Terminal=true
+Name=windows2usb
+Comment=Windows 7/8/8.1/10 ISO to Flash Drive burning utility for Linux
+Comment[ru_RU]=Утилита для записи Windows 7/8/8.1/10 из ISO-файла на USB Flash под Linux
+Exec=windows2usb
+Categories=Development;

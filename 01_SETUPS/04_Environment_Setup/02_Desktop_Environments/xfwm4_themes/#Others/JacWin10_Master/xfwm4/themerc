@@ -1,0 +1,8 @@
+#JacWin10: Just a Copy Windos10
+#by Luiz F Nunes
+
+active_text_color=#050708
+title_font= Sans 9
+show_app_icon=true
+title_alignment=left
+button_layout=O|HMC

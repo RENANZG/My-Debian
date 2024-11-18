@@ -1,0 +1,11 @@
+[Unit]
+Description=Privileged execution service
+After=systemd-machined.service
+
+[Service]
+Type=simple
+ExecStart=/sbin/privexecd.sh
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target

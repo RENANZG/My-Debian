@@ -1,0 +1,11 @@
+[Unit]
+Description=Supervised execution service
+After=systemd-machined.service
+
+[Service]
+Type=simple
+ExecStart=/sbin/supervised.sh
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,347 @@
+#!/bin/bash
+#Bitscout project
+#Copyright Kaspersky Lab
+
+PROJECTNAME="bitscout"
+PROJECTCAPNAME="Bitscout"
+PROJECTRELEASE="22.04"
+PROJECTSHORTNAME="scout"
+BASERELEASE="jammy"
+CONTAINERNET_NAME="ve-container"
+CONTAINERNET_HOST_IP="10.3.0.1"
+CONTAINERNET_HOST_IP_CIDR="10.3.0.1/24"
+CONTAINERNET_GUEST_IP="10.3.0.2"
+CONTAINERNET_GUEST_DNS="8.8.8.8"
+VPNNET="10.5.0.0/24"
+VPNNET_SERVERIP="${VPNNET%.*}.1"
+VPNNET_CLIENTIP="${VPNNET%.*}.2"
+VPNNET_EXPERTIP="${VPNNET%.*}.3"
+VPNNET_IPPOOLSTART="${VPNNET%.*}.2"
+VPNNET_IPPOOLEND="${VPNNET%.*}.250"
+IRC_SERVER=$VPNNET_SERVERIP
+IRC_PORT=6667
+CONTAINERNAME="expert"
+CONTAINERUSERNAME="user"
+LANG=en_US.UTF-8
+HISTORIAN_ZRAM_SIZE=2048M
+
+#Support aliases throughout the scripts
+shopt -s expand_aliases
+
+[ -f "config/$PROJECTNAME-build.conf" ] && . "config/$PROJECTNAME-build.conf"
+
+if [ -n "$GLOBAL_TARGET" -a "$GLOBAL_TARGET" = "iso" ]; then
+  INITRDPATH=build.$GLOBAL_BASEARCH/image/casper/initrd.img
+else
+  INITRDPATH=build.$GLOBAL_BASEARCH/chroot/boot/initrd.img
+fi
+RESERVEDIR=reserve
+SCREENNAME=${PROJECTNAME}_${GLOBAL_BASEARCH}_chroot #creates a screen session for interactive configuration. see scripts/chroot_enter.sh and scripts/chroot_leave.sh
+
+statusprint()
+{
+  if [ "$QUIET" == "true" ]
+  then
+    return 0
+  else
+    echo -e$PRINTOPTIONS "$1"
+  fi
+}
+
+create_dir_safe()
+{
+  [ ! -d "$1" ] && sudo mkdir -p "$1" 2>&-
+  return 0
+}
+
+chroot_mount_cache()
+{
+  trap "chroot_unmount_cache \"$CHROOTPATH\"" SIGINT SIGKILL SIGTERM
+  CHROOTPATH="$1"
+  if [ -z "$CHROOTPATH" ]
+  then
+    statusprint "Failed to mount cache dirs: chroot path cannot be empty!" &&
+    return 1
+  fi
+  statusprint "Mounting chroot cache directories into \"$CHROOTPATH\".." &&
+ 
+  statusprint "Mounting ./build.$GLOBAL_BASEARCH/cache/apt.cache.." &&
+  create_dir_safe ./build.$GLOBAL_BASEARCH/cache/apt.cache &&
+  create_dir_safe $CHROOTPATH/var/cache/apt/archives &&
+  sudo mount --bind $PWD/build.$GLOBAL_BASEARCH/cache/apt.cache $CHROOTPATH/var/cache/apt/archives &&
+
+  statusprint "Mounting ./build.$GLOBAL_BASEARCH/cache/apt.lists.." &&
+  create_dir_safe ./build.$GLOBAL_BASEARCH/cache/apt.lists &&
+  create_dir_safe $CHROOTPATH/var/lib/apt/lists &&
+  sudo mount --bind $PWD/build.$GLOBAL_BASEARCH/cache/apt.lists $CHROOTPATH/var/lib/apt/lists && return 0 || return 1
+
+}
+
+chroot_unmount_cache()
+{
+  CHROOTPATH="$1"
+  if [ -z "$CHROOTPATH" ]
+  then
+    statusprint "Failed to unmount cache dirs: chroot path cannot be empty!" &&
+    return 1
+  fi
+
+  statusprint "Unmounting chroot cache directories inside \"$CHROOTPATH\".."
+  sudo umount -l "$CHROOTPATH/var/cache/apt/archives" "$CHROOTPATH/var/lib/apt/lists" 2>&-
+  return 0
+}
+
+chroot_unmount_fs()
+{
+  CHROOTPATH="$1"
+  statusprint "Unmounting active chroot filesystems inside \"$CHROOTPATH\".."
+  mount | grep -q "$CHROOTPATH/sys/kernel/security" && sudo umount -l "$CHROOTPATH/sys/kernel/security"
+  sudo umount -l "$CHROOTPATH/dev/pts" "$CHROOTPATH/sys" "$CHROOTPATH/proc" 2>&-
+  chroot_unmount_cache "$1"
+  return 0
+}
+
+#decrease aria2c default verbosity
+aria2c(){ /usr/bin/aria2c --console-log-level=warn "$@";}; export -f aria2c
+
+chroot_exec()
+{
+
+  DIR="$1"
+  CMD="$2"
+  BASEDIR="$PWD"
+  if [ ! -d "$DIR/dev" ]
+  then
+    sudo mkdir -p "$DIR/dev" &&
+    cd "$DIR/dev" &&
+    sudo MAKEDEV std &&
+    cd "$BASEDIR"
+  fi
+
+  chroot_mount_cache "$DIR" &&
+  trap "chroot_unmount_fs \"$DIR\"" SIGINT SIGKILL SIGTERM &&
+
+  ( [ ! -d "$DIR/tmp" ] && sudo mkdir -p "$DIR/tmp" || true ) &&
+  sudo chmod o+rwX "$DIR/tmp" &&
+  statusprint "Executing command in chroot ($DIR):" &&
+  statusprint "$CMD" &&
+  echo "#!/bin/bash
+  export LANG=$LANG
+  mkdir -p /dev/pts 2>&-
+  mount -t devpts devpts /dev/pts
+  mount -t proc proc /proc
+  mount -t sysfs sysfs /sys
+  export HOME=/root
+  mkdir -p /var/lib/dbus 2>&-
+  dbus-uuidgen > /var/lib/dbus/machine-id 2>&-
+  dpkg-divert --local --rename --add /sbin/initctl >/dev/null
+  ln -s /bin/true /sbin/initctl 2>&-
+  rm /tmp/chroot_session.sh
+  aria2c(){ /usr/bin/aria2c --console-log-level=warn \"\$@\";}; export -f aria2c
+  $CMD
+  CMDRETURN=\$?
+  rm /var/lib/dbus/machine-id 2>&-
+  rm /sbin/initctl
+  dpkg-divert --rename --remove /sbin/initctl >/dev/null
+  exit \$CMDRETURN " > "./$DIR/tmp/chroot_session.sh" &&
+
+  chmod +x "./$DIR/tmp/chroot_session.sh" &&
+  if sudo chroot "$DIR" "/tmp/chroot_session.sh"
+  then
+      statusprint "Info: command in chroot succeeded."
+    chroot_unmount_fs "$DIR" && return 0
+  else
+    statusprint "Warning: command in chroot failed."
+    chroot_unmount_fs "$DIR" && return 1
+  fi &&
+
+  return 0
+}
+
+nspawn_exec()
+{
+  install_required_package expect
+
+  CHROOTDIR="$1"
+  CHROOTCMD="${2:-/bin/true}"
+  INTERACTIVE="$3"
+  CONTAINER_SPAWN_SCRIPT="$PWD/scripts/nspawn_container_spawn.sh"
+
+  chroot_mount_cache "$PWD/$CHROOTDIR" &&
+  trap "chroot_unmount_fs \"$PWD/$CHROOTDIR\"" SIGINT SIGKILL SIGTERM &&
+  echo "$CHROOTCMD" | sudo tee "$PWD/$CHROOTDIR/chroot_exec.sh" >/dev/null
+
+  statusprint "Executing the following command in nspawn $CHROOTDIR:"
+  statusprint "$CHROOTCMD"
+  export CHROOTDIR
+  export INTERACTIVE
+  export CONTAINER_SPAWN_SCRIPT
+  sudo --preserve-env=CHROOTDIR,INTERACTIVE,CONTAINER_SPAWN_SCRIPT expect $PWD/scripts/nspawn_session.exp
+
+  if [ ! -f "$PWD/$CHROOTDIR/chroot_exec.retcode" ]; then return 0; fi
+  CHROOTRET=$(cat "$PWD/$CHROOTDIR/chroot_exec.retcode")
+  sudo rm "$PWD/$CHROOTDIR/chroot_exec.sh" "$PWD/$CHROOTDIR/chroot_exec.retcode" 2>/dev/null
+
+  if [ "x$CHROOTRET" == "x0" ] 
+  then
+    statusprint "Info: command in nspawn succeeded."
+    chroot_unmount_fs "$PWD/$CHROOTDIR" && return 0
+  else
+    statusprint "Warning: command in nspawn failed. Last return code: $CHROOTRET"
+    chroot_unmount_fs "$PWD/$CHROOTDIR" && return 1
+  fi
+}
+
+unpackinitrd()
+{
+  # unpackinitrd [initrd [dest dir]]
+  if [ -n "$1" ]; then SRCPATH=$1; else SRCPATH=$INITRDPATH; fi
+  if [ -n "$2" ]; then DSTPATH=$2; else DSTPATH=./build.$GLOBAL_BASEARCH/initrd; fi
+  statusprint "Unpacking initrd image from $SRCPATH to $DSTPATH.."
+  if [ -f "$SRCPATH" ]
+  then
+    if [ ! -f ./build.$GLOBAL_BASEARCH/usr/bin/unmkinitramfs ]
+    then
+      chroot_exec build.$GLOBAL_BASEARCH/chroot 'DEBIAN_FRONTEND=noninteractive; apt install initramfs-tools-core' || exit 1
+    fi
+    chroot_exec build.$GLOBAL_BASEARCH/chroot 'INITRD=$(ls -1 boot/ | grep -m1 "initrd.*-.*");
+    cp /usr/bin/unmkinitramfs /tmp/unmkinitramfs
+    sed -i "s/--no-absolute-filenames//g" /tmp/unmkinitramfs
+    echo "Unpacking $INITRD.."
+    mkdir /tmp/initrd
+    /tmp/unmkinitramfs /boot/$(ls -1 boot/ | grep -m1 "initrd.*-.*") /tmp/initrd'
+    [ -n "$DSTPATH" -a -d $DSTPATH ] && sudo rm -rf $DSTPATH
+    sudo mv -v ./build.$GLOBAL_BASEARCH/chroot/tmp/initrd $DSTPATH
+  else
+    echo "[ERROR]: initrd image not found in $SRCPATH."
+  fi
+}
+
+packinitrd()
+{
+  # packinitrd [initrd [src dir]]
+  if [ -n "$1" ]; then DSTPATH=$1; else DSTPATH=$INITRDPATH; fi
+  if [ -n "$2" ]; then SRCPATH=$2; else SRCPATH=./build.$GLOBAL_BASEARCH/initrd; fi
+  statusprint "Packing initrd image from $SRCPATH into $DSTPATH.."
+  if [ -d "$SRCPATH" ]
+  then
+    sudo mv -v "$SRCPATH" ./build.$GLOBAL_BASEARCH/chroot/tmp/initrd
+    chroot_exec build.$GLOBAL_BASEARCH/chroot 'cd /tmp/initrd
+    ls -1 | grep "early" | while read d;
+      do
+        (cd "$d"; find . | cpio -o -H newc ) | tee -a /tmp/initrd.img.new >/dev/null
+      done;
+    (cd ./main; find . | cpio -o -H newc ) | lz4 -l -9 -c | tee -a "/tmp/initrd.img.new" >/dev/null'
+    cat ./build.$GLOBAL_BASEARCH/chroot/tmp/initrd.img.new | sudo tee "$DSTPATH" >/dev/null
+    sudo rm ./build.$GLOBAL_BASEARCH/chroot/tmp/initrd.img.new
+    sudo mv -v ./build.$GLOBAL_BASEARCH/chroot/tmp/initrd "$SRCPATH"
+  else
+    echo "[ERROR]: initrd directory not found. Aborting."
+  fi
+}
+
+install_required_package()
+{
+  PKGNAME="$1"
+  if ! dpkg-query --show --showformat='${db:Status-Status}\n' $PKGNAME | grep -q "^installed$"
+  then
+    statusprint "$PKGNAME was not found your system. It is required to continue.\nPlease authorize installing $PKGNAME.."
+    if ! apt-cache search "$PKGNAME" | grep -q "$PKGNAME"
+    then
+      #let's check that universe repository is enabled. required for some packages, i.e. easy-rsa 
+      REPOSITORY="universe"
+      if ! apt-cache policy | grep -q "$REPOSITORY"
+      then
+        statusprint "Enabling additional repository ($REPOSITORY) for your system.."
+        OSCODENAME=`lsb_release -c| awk '{print $2}'`
+        sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu/ $OSCODENAME $REPOSITORY"
+
+        statusprint "Updating host system repository index.." 
+        sudo apt -y update
+      fi
+    fi;
+    if ! sudo apt -y install "$PKGNAME"; 
+    then
+      statusprint "Updating host system repository index.." 
+      sudo apt -y update
+      if ! sudo apt -y install "$PKGNAME"; 
+      then 
+        statusprint "ERROR: Couldn't install/find $PKGNAME. Aborting.."
+        exit 1;
+      fi;
+    fi;
+  fi
+}
+
+filelist_exists()
+{
+  statusprint "Checking if file (filelist) exists.."
+  for i in $@
+  do
+    if [ ! -f "$i" ]; then
+      statusprint "File is NOT FOUND: $i"
+      return 1;
+    else
+      statusprint "File exists: $i"
+    fi;
+  done;
+  return 0;
+}
+
+file_template_copy()
+{
+  SRC="$1"
+  DST="$2"
+  statusprint "Copying template-based file: \"$1\" -> \"$2\""
+  [ ! -d "${DST%/*}" ] && $SUDO mkdir -p "${DST%/*}"
+  sed "s/<PROJECTNAME>/${PROJECTNAME}/g;  s/<PROJECTCAPNAME>/${PROJECTCAPNAME}/g; s/<PROJECTRELEASE>/${PROJECTRELEASE}/g; s/<PROJECTSHORTNAME>/${PROJECTSHORTNAME}/g; s/<CONTAINERNAME>/${CONTAINERNAME}/g; s/<CONTAINERUSERNAME>/${CONTAINERUSERNAME}/g; s/<BASERELEASE>/${BASERELEASE}/g; s/<CONTAINERNET_NAME>/${CONTAINERNET_NAME}/g; s#<CONTAINERNET_HOST_IP_CIDR>#${CONTAINERNET_HOST_IP_CIDR}#g; s/<CONTAINERNET_GUEST_IP>/${CONTAINERNET_GUEST_IP}/g; s/<CONTAINERNET_HOST_IP>/${CONTAINERNET_HOST_IP}/g; s/<CONTAINERNET_GUEST_DNS>/${CONTAINERNET_GUEST_DNS}/g; s/<HISTORIAN_ZRAM_SIZE>/$HISTORIAN_ZRAM_SIZE/g; s/<HOSTSSH_ENABLED>/${GLOBAL_HOSTSSH_ENABLED}/g; s/<LANACCESS_ENABLED>/${GLOBAL_LANACCESS_ENABLED}/g; s/<AUTOMOUNT>/${GLOBAL_AUTOMOUNT}/ " "$SRC" | $SUDO tee "$DST" >/dev/null
+}
+
+sudo_file_template_copy()
+{
+  SUDO="sudo" file_template_copy "$1" "$2"
+}
+
+chroot_safecopy_resources()
+{
+  #This function is used to safe-copy files from resources to destination chroot
+  #A simple cp ./resources/usr/share/vim/vimrc to ./build.$GLOBAL_BASEARCH/chroot/resources
+
+  if [ ! -d "./build.$GLOBAL_BASEARCH/chroot/resources" ]; then
+    sudo mkdir -p ./build.$GLOBAL_BASEARCH/chroot/resources
+  fi
+  if ! mount | grep -q ./build.$GLOBAL_BASEARCH/chroot/resources; then
+    if ! sudo mount --bind ./resources ./build.$GLOBAL_BASEARCH/chroot/resources; then
+      echo "ERROR: Failed to mount-bind ./resources to ./build.$GLOBAL_BASEARCH/chroot/resources."
+      return 1
+    fi
+  fi
+  statusprint "Copying inside the chroot environment:"
+  sudo chroot ./build.$GLOBAL_BASEARCH/chroot /bin/cp $*
+  retcode=$?
+  sudo umount ./build.$GLOBAL_BASEARCH/chroot/resources
+  sudo rmdir ./build.$GLOBAL_BASEARCH/chroot/resources
+  return $retcode
+}
+
+normalize_size()
+{
+  install_required_package gawk
+  if [ -z "$1" ]; then return; fi
+  echo "$1" | gawk '
+    {
+    v=$0; gsub(/[a-zA-Z]*$/,"",v); 
+    u=tolower($0); gsub(/^[0-9\.]*/,"",u); 
+    switch(u){ 
+      case "kib": c=1024; break; 
+      case "mib": c=1024*1024; break; 
+      case "gib": c=1024*1024*1024; break; 
+      case  "kb": c=1000; break; 
+      case  "mb": c=1000*1000; break; 
+      case  "gb": c=1000*1000*1000; break; 
+    };  
+    print v*c; 
+  }'
+}
+
+

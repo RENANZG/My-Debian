@@ -1,0 +1,8 @@
+# Adwaita-dark theme by amitkul2
+
+active_text_color=#eeeeec
+inactive_text_color=#949796
+button_offset=6
+button_spacing=6
+maximized_offset=6
+show_app_icon=false

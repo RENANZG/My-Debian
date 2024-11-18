@@ -1,0 +1,44 @@
+mode server
+
+local <OPENVPN_SERVER_EXTIP> #the server external IP
+port <OPENVPN_SERVER_PORT> #the server listening port
+proto <OPENVPN_SERVER_PROTOCOL> #comms protocol: tcp-server or udp. udp is recommended as the fastest option!
+
+tun-mtu 1500
+daemon
+
+dev-type tap
+dev <PROJECTSHORTNAME>
+
+user nobody
+group nogroup
+
+ifconfig <OPENVPN_SERVER_IP> 255.255.255.0
+
+ifconfig-pool <OPENVPN_IPPOOL_START> <OPENVPN_IPPOOL_END>
+ifconfig-pool-persist /etc/openvpn/server/<PROJECTSHORTNAME>/ip_pool.lst 0
+
+duplicate-cn #Allow multiple clients to use the same certificate
+
+remote-cert-tls client
+
+tls-server
+tls-auth /etc/openvpn/server/<PROJECTSHORTNAME>/ta.key 0
+ca /etc/openvpn/server/<PROJECTSHORTNAME>/ca.crt
+cert /etc/openvpn/server/<PROJECTSHORTNAME>/server.crt
+key /etc/openvpn/server/<PROJECTSHORTNAME>/server.key
+dh /etc/openvpn/server/<PROJECTSHORTNAME>/dh.pem
+
+verb 3
+cipher AES-256-CBC
+
+persist-key
+persist-tun
+
+log-append /var/log/openvpn.<PROJECTSHORTNAME>.log
+
+keepalive 60 180
+client-to-client
+max-clients 10
+status /var/run/openvpn.<PROJECTSHORTNAME>.status
+

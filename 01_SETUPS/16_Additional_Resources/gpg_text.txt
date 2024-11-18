@@ -1,0 +1,67 @@
+
+###########################################################
+
+# METHOD 1
+
+# Function to verify Tails IMG
+verify_tails_image() {
+  curl -o tails_data/tails-signing.key -L $TAILS_KEY_URL
+  curl -o tails_data/tails.img.sig -L $TAILS_SIG_URL
+ 
+  rm -f tails_data/tmp_keyring.pgp
+  gpg --no-default-keyring --keyring tails_data/tmp_keyring.pgp --import tails_data/tails-signing.key
+
+  if gpg --no-default-keyring --keyring tails_data/tmp_keyring.pgp --fingerprint 58ACD84F | grep "A490 D0F4 D311 A415 3E2B  B7CA DBB8 02B2 58AC D84F"; then
+    echo "The imported Tails developer key is valid."
+  else
+    echo "ERROR! The imported key does not seem to be the right one. Something is fishy!"
+    exit 1
+  fi
+  
+  if gpg --no-default-keyring --keyring tails_data/tmp_keyring.pgp --verify tails_data/tails.img.sig; then
+    echo "The .img seems legit."
+  else
+    echo "ERROR! The ISO does not seem to be signed by the Tails key. Something is fishy!"
+    exit 1
+  fi
+}
+
+###########################################################
+
+# METHOD 2
+
+# Download and verify Tails signing key
+echo "Downloading Tails signing key..."
+wget -q --show-progress "$SIGNING_KEY_URL" -O tails-signing.key
+
+echo "Importing Tails signing key..."
+gpg --import tails-signing.key
+
+# Install the Debian keyring
+echo "Installing Debian keyring..."
+sudo apt update -q
+sudo apt install -y debian-keyring
+
+# Import Chris Lamb's key from the Debian keyring
+echo "Importing Chris Lamb's key..."
+gpg --keyring="$KEYRING_PATH" --export "$KEY_EMAIL" | gpg --import
+
+# Verify certifications on the Tails signing key
+echo "Verifying certifications on the Tails signing key..."
+gpg --keyid-format 0xlong --check-sigs "$KEY_ID" | grep -E "sig!2.*$KEY_EMAIL"
+
+# Certify the Tails signing key with your own key
+echo "Certifying the Tails signing key with your own key..."
+gpg --lsign-key "$KEY_ID"
+
+# Download the Tails USB image
+echo "Downloading Tails USB image..."
+wget -q --show-progress "$TAILS_IMG_URL" -O "$IMG_FILE"
+
+# Download the signature of the USB image
+echo "Downloading signature of the USB image..."
+wget -q --show-progress "$TAILS_SIG_URL" -O "$IMG_SIG_FILE"
+
+# Verify the downloaded image
+echo "Verifying the downloaded image..."
+TZ=UTC gpg --no-options --keyid-format long --verify "$IMG_SIG_FILE" "$IMG_FILE"

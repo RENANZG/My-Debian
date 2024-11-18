@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="console-application">
+  <id>org.ru.valdikss.windows2usb</id>
+  <name>windows2usb</name>
+  <summary>Windows 7/8/8.1/10/11 ISO to Flash Drive burning utility for Linux</summary>
+  <summary lang="ru_RU">Утилита для записи Windows 7/8/8.1/10/11 из ISO-файла на USB Flash под Linux</summary>
+  <url type="homepage">https://github.com/ValdikSS/windows2usb</url>
+  <metadata_license>CC0-1.0</metadata_license>
+
+  <description>
+    <p>Windows2usb is a console script which writes Microsoft Windows 7/8/8.1/10/11 installation DVD images to USB Flash Drive or external HDD on Linux.
+      It was designed with compatibility in mind, and should work in all cases, contrary to other popular Linux tools.</p>
+
+  <p>
+    Features:
+      <ul>
+        <li>Fully automatic, no preparations required</li>
+        <li>Supports BIOS and UEFI, FAT32 and NTFS</li>
+        <li>Supports custom Windows ISOs with install.wim &gt; 4GiB</li>
+        <li>Uses stock Windows bootloaders where possible</li>
+        <li>Does not break UEFI Secure Boot chain</li>
+      </ul>
+  </p>
+  </description>
+
+  <provides>
+    <binary>windows2usb</binary>
+  </provides>
+  <releases>
+    <release version="0.2.3" date="2022-12-08" />
+  </releases>
+  <developer_name>ValdikSS</developer_name>
+</component>

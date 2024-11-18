@@ -1,0 +1,63 @@
+#!/bin/sh
+
+########################################################################
+# VISIT: 
+# SCRIPT CREDITS: https://portable-linux-apps.github.io/
+# 1. Make it executable:
+# $ sudo chmod +x ./file.sh
+# 2. Then run
+# $ sudo bash ./file.sh
+########################################################################
+
+APP=tor-browser
+
+# CREATE THE FOLDER
+mkdir /opt/$APP
+cd /opt/$APP
+
+# ADD THE REMOVER
+echo '#!/bin/sh' >> /opt/$APP/remove
+echo "rm -R -f /usr/share/applications/AM-$APP.desktop /opt/$APP /usr/local/bin/$APP" >> /opt/$APP/remove
+chmod a+x /opt/$APP/remove
+
+# DOWNLOAD THE ARCHIVE
+mkdir tmp
+cd ./tmp
+
+wget https://www.torproject.org/$(wget -q https://www.torproject.org/download/ -O - | grep -i linux | grep 'tar.xz"' | sed 's/ //g' | head -1 | grep -o -P '(?<="href=").*(?=">)')
+tar fx ./*.tar.xz
+cd ..
+mv ./tmp/*/Browser/* ./
+rm -R ./tmp
+
+# LINK / SCRIPT IN $PATH
+
+cat >> /usr/local/bin/$APP << 'EOF'
+#!/bin/sh
+sh -c '/opt/tor-browser/start-tor-browser --detach || ([ ! -x /opt/tor-browser/start-tor-browser ] && /opt/tor-browser/start-tor-browser --detach)' dummy %k
+EOF
+chmod a+x /usr/local/bin/$APP
+
+# LAUNCHER
+echo "
+[Desktop Entry]
+Type=Application
+Name=Tor Browser
+GenericName=Web Browser
+Comment=Tor Browser is +1 for privacy and −1 for mass surveillance
+Categories=Network;WebBrowser;Security;
+Exec=sh -c '/opt/tor-browser/start-tor-browser --detach || ([ ! -x /opt/tor-browser/start-tor-browser ] && /opt/tor-browser/start-tor-browser --detach)' dummy %k
+X-TorBrowser-ExecShell=/opt/tor-browser/start-tor-browser --detach
+Icon=/opt/tor-browser/browser/chrome/icons/default/default128.png
+StartupWMClass=Tor Browser"  >> /usr/share/applications/AM-$APP.desktop
+
+# CHANGE THE PERMISSIONS
+currentuser=$(who | awk '{print $1}')
+chown -R $currentuser /opt/$APP
+
+# MESSAGE
+echo "
+
+	Tor Browser is provided by https://www.torproject.org
+	
+"

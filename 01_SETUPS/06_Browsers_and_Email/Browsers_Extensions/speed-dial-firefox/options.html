@@ -1,0 +1,144 @@
+<!DOCTYPE HTML>
+<html>
+
+	<head>
+		<title>Speed Dial Options</title>
+		<link type="text/css" rel="stylesheet" href="css/options.css" />
+	</head>
+
+	<body>
+		<div id="content">
+			<h1>Display Options</h1>
+			<table class="form">
+				<tbody>
+					<tr>
+						<td class="field">Number of Columns</td>
+						<td class="value">
+							<select id="dial_columns">
+								<option value="2">2 Columns</option>
+								<option value="3">3 Columns</option>
+								<option value="4">4 Columns</option>
+								<option value="5">5 Columns</option>
+								<option value="6">6 Columns</option>
+								<option value="7">7 Columns</option>
+								<option value="8">8 Columns</option>
+								<option value="9">9 Columns</option>
+								<option value="10">10 Columns</option>
+							</select>
+						</td>
+					</tr>
+
+					<tr>
+						<td class="field">Dial Width</td>
+						<td class="value">
+							<select id="dial_width">
+								<option value="40">40%</option>
+								<option value="50">50%</option>
+								<option value="60">60%</option>
+								<option value="70">70%</option>
+								<option value="80">80%</option>
+								<option value="90">90%</option>
+								<option value="100">100%</option>
+							</select>
+						</td>
+					</tr>
+
+					<tr>
+						<td class="field">Default Folder to Show</td>
+						<td class="value"><div id="folder"></div></td>
+					</tr>
+
+					<tr>
+						<td class="field"><label for="background_color">Background Color</label></td>
+						<td class="value"><input type="color" id="background_color"></td>
+					</tr>
+
+					<tr>
+						<td class="field"><label for="show_new_entry">Show [+] Button</label></td>
+						<td class="value"><input type="checkbox" id="show_new_entry"></td>
+					</tr>
+
+					<tr>
+						<td class="field"><label for="show_folder_list">Show Folder Selector</label></td>
+						<td class="value"><input type="checkbox" id="show_folder_list"></td>
+					</tr>
+
+					<tr>
+						<td class="field"><label for="drag_and_drop">Enable Drag & Drop</label></td>
+						<td class="value"><input type="checkbox" id="drag_and_drop"></td>
+					</tr>
+
+					<tr>
+						<td class="field"><label for="center_vertically">Enable Vertical Centering</label></td>
+						<td class="value"><input type="checkbox" id="center_vertically"></td>
+					</tr>
+
+					<tr>
+						<td class="field"><label for="show_options_gear">Show Options/Settings Gear</label></td>
+						<td class="value"><input type="checkbox" id="show_options_gear"></td>
+					</tr>
+
+					<tr>
+						<td class="field"><label for="show_subfolder_icons">Show Sub-folder Icons</label></td>
+						<td class="value"><input type="checkbox" id="show_subfolder_icons"></td>
+					</tr>
+
+					<tr class="folder_color_row">
+						<td class="field"><label for="folder_color">Color of Folder Icons</label></td>
+						<td class="value"><input type="color" id="folder_color"></td>
+					</tr>
+
+					<tr>
+						<td class="field"><label for="enable_sync">Enable Synchronization</label></td>
+						<td class="value"><input type="checkbox" id="enable_sync"></td>
+					</tr>
+				</tbody>
+			</table>
+
+			<p><input type="checkbox" id="show_advanced"><label for="show_advanced"> Show Advanced Settings</label></p>
+
+			<div id="advanced">
+				<h1>Advanced Options</h1>
+				<p>Incorrect application of these settings can break the speed dial.</p>
+				<table class="form">
+					<tr>
+						<td class="field"><label for="force_http">Force HTTPS to HTTP</label></td>
+						<td class="value"><input type="checkbox" id="force_http"></td>
+					</tr>
+					<tr>
+						<td class="field">Thumbnailing service</td>
+						<td class="value">
+							<p>[URL] token will be replaced by the speed dial URL</p>
+							<input type="text" id="thumbnailing_service" class="text">
+						</td>
+					</tr>
+					<tr>
+						<td class="field"><label for="custom_icon_data">Custom Icon JSON Settings</label></td>
+						<td class="value">
+							<p>This raw JSON string must be valid! <br>
+							This shows your custom icon settings so you can copy & paste between computers</p>
+							<textarea id="custom_icon_data" rows="4" cols="38" ></textarea>
+						</td>
+					</tr>
+					<tr>
+						<td class="field">Reset Local Settings to Default Values</td>
+						<td class="value"><input type="button" class="reset" id="reset_local_settings" value="Reset Local Values"></td>
+					</tr>
+					<tr>
+						<td class="field">Delete Synchronized Data from Server</td>
+						<td class="value"><input type="button" class="reset" id="reset_synced_settings" value="Reset Sync Data"></td>
+					</tr>
+				</table>
+			</div>
+
+			<input type="button" id="save" value="Save">
+			<input type="button" id="cancel" value="Cancel">
+		</div>
+
+		<script type="text/javascript" src="javascript/jquery.min.js"></script>
+		<script type="text/javascript" src="javascript/common.js"></script>
+		<script type="text/javascript" src="javascript/options.js"></script>
+		<script type="text/javascript" src="javascript/eventPage.js"></script>
+	</body>
+
+</html>
