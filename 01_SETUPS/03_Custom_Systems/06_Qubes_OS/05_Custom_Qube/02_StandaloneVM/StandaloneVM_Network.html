@@ -163,7 +163,7 @@
 
   <p>Command in dom0:</p>
 
-  <pre><code>sudo qvm-features [StandaloneVM_Name] stubdom-qrexec 1</code></pre>
+  <pre><code>[user@dom0 ~]$ sudo qvm-features [StandaloneVM_Name] stubdom-qrexec 1</code></pre>
 
   <h3>Audio Drive</h3>
 
@@ -171,7 +171,7 @@
 
   <p>Command in dom0:</p>
 
-  <pre><code>sudo qvm-features [StandaloneVM_Name] audio-model ich6</code></pre>
-  
+  <pre><code>[user@dom0 ~]$ sudo qvm-features [StandaloneVM_Name] audio-model ich6</code></pre>
+
 </body>
 </html>

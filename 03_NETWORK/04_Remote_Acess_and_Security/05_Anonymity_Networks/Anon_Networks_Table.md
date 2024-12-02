@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Network Comparison Table</title>
+<title>Network Comparison Table</title>
 </head>
 <body>
   <table border="1">
@@ -27,7 +27,7 @@
      <td>Web browsing, access to .onion sites</td>
      <td>High</td>
      <td>Moderate</td>
-     <td>Moderate</td>
+     <td>High</td>
      <td>No</td>
      <td>No</td>
      <td>No</td>

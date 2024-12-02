@@ -189,6 +189,10 @@
       <td><a href="https://nsa.gov/Press-Room/Cybersecurity-Advisories-Guidance">NSA.gov - Cybersecurity Advisories &amp; Guidance</a>
           <a href="https://github.com/nsacyber">(GitHub)</a></td>
     </tr>
+    <tr>
+    <td><a href="https://wiki.archlinux.org/title/Security" target="_blank">Arch Linux Security</a></td>
+    <td></td>
+    </tr>
     <!-- Category: Security Tools and Utilities -->
     <tr>
       <td colspan="2"><strong>Security Tools and Utilities</strong></td>
@@ -334,13 +338,13 @@
     <tr>
       <td><a href="https://github.com/PartialVolume/shredos.x86_64" target="_blank" rel="noopener noreferrer">ShredOS</a></td>
       <td>
-        <a href="https://www.tablesgenerator.com/html_tables#" target="_blank" rel="noopener noreferrer">Secure Boot</a>
+        <a href="" target="_blank" rel="noopener noreferrer">Secure Boot</a>
         <br>
-        <a href="https://www.tablesgenerator.com/html_tables#" target="_blank" rel="noopener noreferrer">Checksums</a>
+        <a href="" target="_blank" rel="noopener noreferrer">Checksums</a>
       </td>
       <td><a href="https://hirensbootcd.org/" target="_blank" rel="noopener noreferrer">Hiren's BootCD PE</a></td>
       <td>
-        <a href="https://www.tablesgenerator.com/html_tables#" target="_blank" rel="noopener noreferrer">Secure Boot</a>
+        <a href="" target="_blank" rel="noopener noreferrer">Secure Boot</a>
         <br>
         <a href="https://hirensbootcd.org/download/" target="_blank" rel="noopener noreferrer">Checksums</a>
       </td>
@@ -719,7 +723,9 @@
     </li>
   </ul>
   
-  <p> Not all SSDs support sanitize. If you use SSDs, enable TRIM in your BIOS. Take care with SSD over-provisioning and SSD flaws. Ensuring TRIM is enabled helps maintain the SSD's performance and longevity by allowing the operating system to inform the SSD which blocks of data are no longer in use and can be wiped internally. Over-provisioning increases the available space for the SSD controller to manage and distribute writes, enhancing performance and durability.</p>
+  <p>Not all SSDs support sanitize, but enabling TRIM in your BIOS boosts performance, longevity, and anti-forensics. TRIM lets the OS inform the SSD of unused blocks, allowing internal wiping and reducing wear. Over-provisioning increases available space for better data management, enhancing both performance and durability. However, care is needed to avoid SSD flaws and ensure optimal over-provisioning.</p>
+  
+  <p><b>The crypttab man page warns that enabling the discard option on encrypted devices can potentially leak information about the encrypted data.</b> This happens because SSD firmware may zero out unused blocks, making them identifiable and revealing patterns such as the filesystem type and used space. An attacker could use this minimal information to target smaller portions of encrypted data and potentially assist in breaking the encryption. However, the actual risk is unclear, as the leak may only offer limited help to an attacker. The warning advises disabling discard (or TRIM) to avoid such risks, especially if there's a need to prevent the exposure of unused sectors or hidden data. Once TRIM is executed, the discarded sectors remain detectable, and encrypted devices should avoid relying on functions that return zeroed-out sectors. To minimize risks, sensitive directories like /tmp /var and other directories used by encryption should be kept in memory and cleared at shutdown.</p>
   
 <p>Learn more:</p>
 <ul>
@@ -8771,8 +8777,8 @@
   
   <ul>
     <li><a href="https://malpedia.caad.fkie.fraunhofer.de">Malpedia</a></li>
-    <li><a href="https://cvedetails.com">CVE Details</a></li>
     <li><a href="https://exploit-db.com">Exploit Database</a></li>
+    <li><a href="https://cvedetails.com">CVE Details</a></li>
     <li><a href="https://fileinfo.co">FileInfo</a></li>
     <li><a href="https://strontic.github.io/xcyclopedia">xCyclopedia</a></li>
     <li><a href="https://winbindex.m417z.com">The Windows Binary Index</a></li>
@@ -8890,7 +8896,8 @@
     <li><a href="https://latexeditor.lagrida.com">Online LaTeX Equation Editor</a></li>
     <li><a href="https://mermaid.live">Mermaid</a></li>
     <li><a href="https://tableconvert.com">Table Convert</a></li>
-    <li><a href="https://tablesgenerator.com">Tables Generator</a></li>
+    <li><a href="https://truben.no/table/">Table Editor 2</a></li>
+    <li><a href="https://divtable.com">Div Table</a></li>
     <li><a href="https://evanhahn.github.io/ffmpeg-buddy/">ffmpeg buddy</a></li>
     <li><a href="https://kutt.it">Kutt your links shorter</a></li>
     <li><a href="https://grammarly.com">Grammarly</a></li>

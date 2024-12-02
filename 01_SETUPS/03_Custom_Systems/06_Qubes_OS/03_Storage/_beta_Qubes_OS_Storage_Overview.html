@@ -1,49 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Qubes OS Storage Overview</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            line-height: 1.6;
-        }
-        h1 {
-            color: #333;
-        }
-        h2 {
-            color: #555;
-        }
-        ul {
-            list-style-type: disc;
-            margin-left: 20px;
-        }
-        code {
-            background-color: #f4f4f4;
-            padding: 2px 4px;
-            border-radius: 3px;
-        }
-        a {
-            color: #0066cc;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Qubes OS Storage Overview</title>
+<style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      line-height: 1.6;
+    }
+    h1 {
+      color: #333;
+    }
+    h2 {
+      color: #555;
+    }
+    ul {
+      list-style-type: disc;
+      margin-left: 20px;
+    }
+    code {
+      background-color: #f4f4f4;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+    a {
+      color: #0066cc;
+    }
+</style>
 </head>
 <body>
 
-<h1>Qubes OS Storage Overview</h1>
+<h2>Qubes OS Storage Overview</h2>
 
 <p>Qubes OS utilizes a unique storage architecture designed to enhance security and isolation. Here are some essential resources for understanding its storage:</p>
 
 <ul>
-    <li><a href="https://www.qubes-os.org/doc/secondary-storage/">Secondary Storage Documentation</a></li>
-    <li><a href="https://wiki.archlinux.org/title/LVM">LVM Overview</a></li>
-    <li><a href="https://www.qubes-os.org/doc/mount-lvm-image/">Mounting LVM Images</a></li>
-    <li><a href="https://www.qubes-os.org/doc/bind-dirs/">Binding Directories</a></li>
-    <li><a href="https://www.qubes-os.org/doc/resize-disk-image/">Resizing Disk Images</a></li>
-    <li><a href="https://www.qubes-os.org/doc/architecture/">Qubes Architecture</a></li>
-    <li><a href="https://www.qubes-os.org/doc/qfilecopy/">QFileCopy Documentation</a></li>
+  <li><a href="https://www.qubes-os.org/doc/secondary-storage/">Secondary Storage Documentation</a></li>
+  <li><a href="https://wiki.archlinux.org/title/LVM">LVM Overview</a></li>
+  <li><a href="https://www.qubes-os.org/doc/mount-lvm-image/">Mounting LVM Images</a></li>
+  <li><a href="https://www.qubes-os.org/doc/bind-dirs/">Binding Directories</a></li>
+  <li><a href="https://www.qubes-os.org/doc/resize-disk-image/">Resizing Disk Images</a></li>
+  <li><a href="https://www.qubes-os.org/doc/architecture/">Qubes Architecture</a></li>
+  <li><a href="https://www.qubes-os.org/doc/qfilecopy/">QFileCopy Documentation</a></li>
 </ul>
 
 <h2>Qubes OS Storage and Backup</h2>

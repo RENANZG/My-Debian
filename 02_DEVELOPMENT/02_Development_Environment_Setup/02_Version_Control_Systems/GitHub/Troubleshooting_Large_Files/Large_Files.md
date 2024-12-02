@@ -177,23 +177,5 @@ $ git push</code></pre>
   <li><strong>Cannot pull or clone repository</strong> – If you can’t pull from or clone a repository, check your bandwidth and storage limits on GitHub. Exceeding the free Git LFS limit can prevent further downloads.</li>
 </ul>
 
-<h2>6. Identifying Large Files in Your Repository</h2>
-
-<p>To identify large files in your repository that might be causing issues, use the following commands:</p>
-
-<h3>6.1 Finding Large Files in the Working Directory</h3>
-<pre><code>find . -type f -exec du -h {} + | sort -rh | head -n 10</code></pre>
-<p>This command shows the top 10 largest files in the current directory and subdirectories, sorted by size.</p>
-
-<h3>6.2 Finding Large Objects in Your Git History</h3>
-<pre><code>git rev-list --objects --all |
-  git cat-file --batch-check='%(objectname) %(objecttype) %(rest)' |
-  grep blob |
-  cut -d' ' -f1 |
-  xargs -n1 git ls-tree --full-name --abbrev=40 -r |
-  sort -r -n -k3 |
-  head -n 10</code></pre>
-<p>This command helps you find the largest objects in your Git history and identify files that may be taking up too much space.</p>
-
 </body>
 </html>

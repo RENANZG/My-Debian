@@ -1,50 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cryptographic Algorithms Cheat Sheet</title>
 <style>
-        body {
-        font-family: Arial, sans-serif;
-        line-height: 1.6;
-        margin: 20px;
-        }
-        table {
-        width: 100%;
-        border-collapse: collapse;
-        }
-        th, td {
-        border: 1px solid #000;
-        padding: 8px;
-        text-align: left;
-        }
-        th {
-        background-color: #f2f2f2;
-        }
-        pre, code {
-        background-color: #f4f4f4;
-        padding: 10px;
-        border-radius: 5px;
-        display: block;
-        margin: 2px 0;
-        overflow-x: auto;
-        }
-        pre < code {
-        background-color: #f4f4f4;
-        padding: 10px;
-        border-radius: 5px;
-        display: block;
-        margin: 2px 0;
-        overflow-x: auto;
-        }        
-        button {
-        margin-top: 5px;
-        padding: 5px 5px;
-        font-size: 1em;
-        cursor: pointer;
-        }
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1;
+      margin: 5mm;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #000;
+      padding: 2px;
+      text-align: center;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    pre, code {
+      background-color: #f4f4f4;
+      padding: 10px;
+      border-radius: 5px;
+      display: block;
+      margin: 2px 0;
+      overflow-x: auto;
+    }
+    pre < code {
+      background-color: #f4f4f4;
+      padding: 10px;
+      border-radius: 5px;
+      display: block;
+      margin: 2px 0;
+      overflow-x: auto;
+    }
+    button {
+      margin-top: 5px;
+      padding: 5px 5px;
+      font-size: 1em;
+      cursor: pointer;
+    }
 </style>
+</head>
+<body>
+
 <table>
 <thead>
   <tr>
@@ -120,8 +123,6 @@
   </tr>
 </tbody>
 </table>
-
-
 
 </body>
 </html>

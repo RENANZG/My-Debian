@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Memorize Numbers Using Peg System</title>
-  <style>
+<title>Memorize Numbers Using Peg System</title>
+<style>
     body {
       font-family: Arial, sans-serif;
       line-height: 1.6;
@@ -20,9 +20,11 @@
     ul li {
       margin-bottom: 10px;
     }
-  </style>
+</style>
 </head>
 <body>
+
+  <h2>Memorize Numbers Using Peg System</h2>
 
   <p>Creating mnemonics to memorize phone numbers and random sequences of letters and numbers can be a challenging but effective technique. Here's a step-by-step method using the peg system to create mnemonics for both types of data:</p>
 
