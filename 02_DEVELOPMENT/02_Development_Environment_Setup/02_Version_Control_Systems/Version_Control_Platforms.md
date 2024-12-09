@@ -173,7 +173,7 @@
             <td>NASA, Alibaba, GNOME</td>
             <td>Red Hat, Fedora Community</td>
             <td>Google, Two Sigma, Mastercard</td>
-            <td></td>
+            <td>LibreWolf</td>
             <td>Various enterprises</td>
         </tr>
     </tbody>

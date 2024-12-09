@@ -32,7 +32,7 @@
 </head>
 <body>
 
-<h2>Qubes OS Storage Overview</h2>
+<h2>Qubes OS Storage Overview (R4.2)</h2>
 
 <p>Qubes OS utilizes a unique storage architecture designed to enhance security and isolation. Here are some essential resources for understanding its storage:</p>
 
@@ -46,21 +46,20 @@
   <li><a href="https://www.qubes-os.org/doc/qfilecopy/">QFileCopy Documentation</a></li>
 </ul>
 
-<h2>Qubes OS Storage and Backup</h2>
-
-<p>Qubes OS implements a unique storage and backup approach tailored to its virtualization-centric design. Below are details on the types of storage pools, storage categories, backup types, and relevant configuration folders used in Qubes OS.</p>
-
 <h2>Qubes Storage Pool Types</h2>
 
 <p>Qubes OS utilizes several storage pool types, each with distinct purposes to efficiently manage data:</p>
 
 <ul>
-  <li><code>vm-pool</code>: Stores virtual machine (VM) data, providing snapshot and backup capabilities. This pool allows isolated storage for individual VMs, enhancing security and efficiency.</li>
-  <li><code>varlibqubes</code>: The primary storage location for system templates and AppVMs, holding core data essential to Qubes OS operation.</li>
-  <li><code>linux-Kernel</code>: Dedicated to the Linux kernel and its associated components, it supports system-level functions and secure storage of drivers and essential files.</li>
+  <li><code>vm-pool</code>: Is a LVM Thin Pool that stores virtual machine (VM) data, providing snapshot and backup capabilities. This pool allows isolated storage for individual VMs, enhancing security and efficiency.</li>
+  <li><code>varlibqubes</code>: The primary storage location for system templates and AppVMs, holding core data essential to Qubes OS operation. The storage pool named varlibqubes (and located in /var/lib/qubes) isn't normally used for anything in the default LVM installation layout. But the /var/lib/qubes directory is used for other purposes besides hosting a storage pool. Specifically, installing a template will create some large temporary files there.
+</li>
+  <li><code>linux-kernel</code>: Dedicated to the Linux kernel and its associated components, it supports system-level functions and secure storage of drivers and essential files.</li>
 </ul>
 
 <p>By default, Qubes OS installs with a <code>vm-pool</code> that utilizes Logical Volume Management (LVM). The <code>varlibqubes</code> pool contains both "root" and "private" volumes, though users can configure separate pools if required. Advanced configurations can be managed through command-line tools beyond the Qubes Manager and Desktop Manager interfaces.</p>
+
+<p>Lists all configured storage pools in Qubes OS with: <code>qvm-pool list</code>.</p>
 
 <h2>Types of Storage in Qubes OS</h2>
 
@@ -116,10 +115,21 @@
 <h3>Storage and Volume Management</h3>
 
 <pre><code>
+# A graphical application to manage disks, partitions and LVM2 storages.
+sudo blivet-gui
+
+# Displays general system storage usage
+qvm-ls --format disk
+qvm-ls -d
+
 # Lists all logical volumes
 sudo lvs
 
+# Lists block devices
+lsblk
+
 # Displays detailed information about volume groups
+sudo vgdisplay
 sudo vgdisplay -v
 
 # Scans for available physical volumes and partitions
@@ -133,9 +143,6 @@ qvm-pool info vm-pool
 
 # Checks the status of the system’s overall storage preferences
 qubes-prefs
-
-# Displays general system storage usage
-qvm-ls --format disk
 
 # Displays system private storage usage
 sudo df -h /rw

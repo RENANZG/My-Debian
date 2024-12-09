@@ -31,6 +31,13 @@
   
   <h1>Basic Configuration of Windows in Qubes OS</h1>
   
+  Windows 10 Specifications:
+  
+  RAM: 2 GB (for 64-bit)
+  Minimum Hard drive size: 32GB
+
+  https://www.microsoft.com/en-us/windows/windows-10-specifications
+  
   <h2>Installation Process</h2>
   
   <p></p>

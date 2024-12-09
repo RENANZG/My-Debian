@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "--- Setting up ALSA output for ESSX8336"
+echo "--- Setting up ALSA output"
 
 # This may be different for your system, you can check it by running aplay -l
 OUTPUT_DEVICE='-c 0'
@@ -13,7 +13,7 @@ amixer $OUTPUT_DEVICE cset name='DAC Playback Volume' 999,999
 amixer $OUTPUT_DEVICE cset name='Headphone Mixer Volume' 999,999
 amixer $OUTPUT_DEVICE sset Headphone 3
 
-echo "--- Setting up ALSA output for ESSX8336"
+echo "--- Setting up ALSA output"
 
 # This may be different for your system, you can check it by running arecord -l
 INPUT_DEVICE='-c 0'

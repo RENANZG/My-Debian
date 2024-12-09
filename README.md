@@ -191,7 +191,7 @@
     </tr>
     <tr>
     <td><a href="https://wiki.archlinux.org/title/Security" target="_blank">Arch Linux Security</a></td>
-    <td></td>
+    <td><a href="https://blog.nowhere.moe/" target="_blank">The Nihilism Blog</a></td>
     </tr>
     <!-- Category: Security Tools and Utilities -->
     <tr>
@@ -564,6 +564,11 @@
       </a>
     </li>
     <li>
+      <a href="https://mntre.com/reform.html">
+        The Reform laptop - MNT Research GmbH
+      </a>
+    </li>
+    <li>
       <a href="https://pine64.com">
         PINE64 - Community-driven hardware projects
       </a>
@@ -653,6 +658,12 @@
   </ul>
   
   <h4>
+    Leverage Automatic Firmware Updates
+  </h4>
+
+  <p>If your operating system supports automatic or managed firmware updates (e.g., Linux Vendor Firmware Service, LVFS), regularly check for updates using <code>fwupdmgr get-updates</code> and apply them with <code>fwupdmgr update</code>.</p>
+  
+  <h4>
     Hardware Spoof
   </h4>
   
@@ -727,12 +738,40 @@
   
   <p><b>The crypttab man page warns that enabling the discard option on encrypted devices can potentially leak information about the encrypted data.</b> This happens because SSD firmware may zero out unused blocks, making them identifiable and revealing patterns such as the filesystem type and used space. An attacker could use this minimal information to target smaller portions of encrypted data and potentially assist in breaking the encryption. However, the actual risk is unclear, as the leak may only offer limited help to an attacker. The warning advises disabling discard (or TRIM) to avoid such risks, especially if there's a need to prevent the exposure of unused sectors or hidden data. Once TRIM is executed, the discarded sectors remain detectable, and encrypted devices should avoid relying on functions that return zeroed-out sectors. To minimize risks, sensitive directories like /tmp /var and other directories used by encryption should be kept in memory and cleared at shutdown.</p>
   
-<p>Learn more:</p>
+<p>Law-based attacks:</p>
+
 <ul>
- <li><a href="https://veracrypt.eu/en/Trim%20Operation.html">Trim Operation - Veracrypt</a></li>
- <li><a href="https://veracrypt.fr/en/Plausible%20Deniability.html">Plausible Deniability - Veracrypt</a>.</li>
- <li><a href="https://en.wikipedia.org/wiki/Deniable_encryption">Deniable encryption - Wikipedia</a></li>
- <li><a href="https://en.wikipedia.org/wiki/Key_disclosure_law">Key disclosure law - Wikipedia</a></li>
+  <li><a href="https://en.wikipedia.org/wiki/Deniable_encryption">Deniable encryption - Wikipedia</a></li>
+  <li><a href="https://en.wikipedia.org/wiki/Key_disclosure_law">Key disclosure law - Wikipedia</a></li>
+  <li><a href="https://en.wikipedia.org/wiki/Civil_forfeiture_in_the_United_States">Civil forfeiture in the United States - Wikipedia</a></li>
+  <li><a href="https://en.wikipedia.org/wiki/Product_liability">Product Liability - Wikipedia</a></li>
+</ul>  
+  
+<p>Veracrypt Security Requirements and Precautions:</p>
+  
+<ul>
+<li><a href="https://veracrypt.fr/en/Plausible%20Deniability.html">Plausible Deniability</a>.</li>
+<li><a href="https://veracrypt.fr/en/Data%20Leaks.html">Data Leaks</a>
+<ul>
+<li><a href="https://veracrypt.fr/en/Paging%20File.html">Paging File</a></li>
+<li><a href="https://veracrypt.fr/en/Hibernation%20File.html">Hibernation File</a></li>
+<li><a href="https://veracrypt.fr/en/Memory%20Dump%20Files.html">Memory Dump Files</a></li>
+</ul>
+<li><a href="https://veracrypt.fr/en/Unencrypted%20Data%20in%20RAM.html">Unencrypted Data in RAM</a></li>
+<li><a href="https://veracrypt.fr/en/VeraCrypt%20Memory%20Protection.html">VeraCrypt Memory Protection</a></li>
+<li><a href="https://veracrypt.fr/en/Physical%20Security.html">Physical Security</a></li>
+<li><a href="https://veracrypt.fr/en/Malware.html">Malware</a></li>
+<li><a href="https://veracrypt.fr/en/Multi-User%20Environment.html">Multi-User Environment</a></li>
+<li><a href="https://veracrypt.fr/en/Authenticity%20and%20Integrity.html">Authenticity and Integrity</a></li>
+<li><a href="https://veracrypt.fr/en/Choosing%20Passwords%20and%20Keyfiles.html">Choosing Passwords and Keyfiles</a></li>
+<li><a href="https://veracrypt.fr/en/Changing%20Passwords%20and%20Keyfiles.html">Changing Passwords and Keyfiles</a></li>
+<li><a href="https://veracrypt.fr/en/Trim%20Operation.html">Trim Operation</a></li>
+<li><a href="https://veracrypt.fr/en/Wear-Leveling.html">Wear-Leveling</a></li>
+<li><a href=https://veracrypt.fr/en/Reallocated%20Sectors.html">Reallocated Sectors</a></li>
+<li><a href=https://veracrypt.fr/en/Defragmenting.html">Defragmenting</a></li>
+<li><a href="https://veracrypt.fr/en/Journaling%20File%20Systems.html">Journaling File Systems</a></li>
+<li><a href="https://veracrypt.fr/en/Volume%20Clones.html">Volume Clones</a></li>
+<li><a href="https://veracrypt.fr/en/Additional%20Security%20Requirements%20and%20Precautions.html">Additional Security Requirements and Precautions</a></li>
 </ul>
 
   <h4>
@@ -13161,19 +13200,29 @@
   <pre><code><span>$ </span>sudo apt install partitionmanager</code></pre>
   <button onclick="navigator.clipboard.writeText('sudo apt install partitionmanager')">Copy</button>
   
+  <h5>Blivet (GUI)</h5>
+  
+  <p>GUI tool for storage configuration using blivet library.</p>
+  
+  <a href="https://github.com/storaged-project/blivet-gui/wiki">Blivet (GUI)</a>
+  
   <!-- ########## -->
   
   <h4>Check the Capacity of the Disk</h4>
   
   <p>Use tools like <strong>F3</strong> on Linux to test the true capacity of the card. This can detect if the card has been modified to appear larger than it actually is.</p>
+  
   <p>Install F3 with:</p>
   <pre><code>sudo apt-get install f3</code></pre>
+  
   <p>Test the write process:</p>
   <pre><code>f3write /mount/point/of/card</code></pre>
+  
   <p>Test the read process:</p>
   <pre><code>f3read /mount/point/of/card</code></pre>
   
   <h4>KDiskMark:</h4>
+  
   <p>Install <a href="https://github.com/JonMagon/KDiskMark">KDiskMark</a> to benchmark disk performance. KDiskMark is an HDD and SSD benchmark tool with a very friendly graphical user interface.</p>
   
   <!-- ########## -->
