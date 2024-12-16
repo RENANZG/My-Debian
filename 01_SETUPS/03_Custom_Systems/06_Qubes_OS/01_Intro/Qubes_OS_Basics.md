@@ -46,7 +46,7 @@
 
   <p>For more details, visit the <a href="https://www.qubes-os.org/doc/getting-started/">Qubes OS Getting started</a>, <a href="https://qubes-doc-rst.readthedocs.io">Qubes OS Documentation</a>, <a href="https://www.qubes-os.org/doc/glossary/">Qubes OS Glossary</a>, and and <a href="https://dev.qubes-os.org">Qubes OS Developer’s Documentation</a>.</p>
 
-  <h2>Qubes Organization</h2>
+  <h2>Qubes Organization Terminology</h2>
 
   <ul>
   <li><strong>Core Domains</strong>

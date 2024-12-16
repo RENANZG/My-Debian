@@ -1,0 +1,394 @@
+#!/bin/sh
+
+# SPDX-FileCopyrightText: 2017 Jean-Philippe Ouellet <jpo@vt.edu>
+# SPDX-FileCopyrightText: 2022 daktak <daktak@gmail.com>
+# SPDX-FileCopyrightText: 2023 Frederic Pierret <frederic.pierret@qubes-os.org>
+# SPDX-FileCopyrightText: 2024 Benjamin Grande M. S. <ben.grande.b@gmail.com>
+#
+# SPDX-License-Identifier: MIT
+#
+# Credits: https://gist.github.com/daktak/f887352d564b54f9e529404cc0eb60d5
+# Credits: https://gist.github.com/jpouellet/d8cd0eb8589a5b9bf0c53a28fc530369
+# Credits: https://gist.github.com/fepitre/941d7161ae1150d90e15f778027e3248
+
+set -eu
+
+run_qube(){
+  qube="${1}"
+  shift
+  qvm-run --pass-io --user=root "${qube}" -- "${@}"
+}
+
+create_net_dir(){
+  qube="${1}"
+  run_qube "${qube}" mkdir -p -- "${hook_dir}"
+}
+
+validate_handle(){
+  qube="${1}"
+  untrusted_handle="${2}"
+  case "${untrusted_handle}" in
+    ""|*[!0-9]*)
+      printf '%s\n' "error: ${qube}: invalid handle" >&2
+      exit 1
+      ;;
+    *) ;;
+  esac
+}
+
+validate_ipv4(){
+  qube="${1}"
+  untrusted_ip="${2}"
+  case "${untrusted_ip}" in
+    ""|*[!0-9./]*)
+      printf '%s\n' "error: ${qube}: invalid IPv4 address" >&2
+      exit 1
+      ;;
+    *) ;;
+  esac
+}
+
+validate_ipv6(){
+  qube="${1}"
+  untrusted_ip="${2}"
+  case "${untrusted_ip}" in
+    ""|*[!0-9a-f:/]*)
+      printf '%s\n' "error: ${qube}: invalid IPv6 address" >&2
+      exit 1
+      ;;
+    *) ;;
+  esac
+}
+
+validate_dev(){
+  qube="${1}"
+  untrusted_dev="${2}"
+  case "${untrusted_dev}" in
+    ""|*[!0-9A-Za-z]*)
+      printf '%s\n' "error: ${qube}: invalid device name" >&2
+      exit 1
+      ;;
+    *) ;;
+  esac
+}
+
+get_rule_handle(){
+  qube="${1}"
+  chain="${2}"
+  rule="${3}"
+  run_qube "${qube}" \
+    "nft --handle --stateless list chain ip qubes ${chain} |
+    tr -d '\"' | grep -e '^\s\+${rule} # handle ' | awk '{print \$NF}' |
+    tr '\n' ' '" 2>/dev/null
+}
+
+delete_rule_handle(){
+  qube="${1}"
+  chain="${2}"
+  handle="${3}"
+  run_qube "${qube}" "nft delete rule ip qubes ${chain} handle ${handle}"
+}
+
+delete_rule(){
+  qube="${1}"
+  chain="${2}"
+  rule="${3}"
+  untrusted_handle_list="$(get_rule_handle "${qube}" "${chain}" "${rule}")"
+  if test -n "${untrusted_handle_list}"; then
+    for untrusted_handle in ${untrusted_handle_list}; do
+      unset handle
+      validate_handle "${qube}" "${untrusted_handle}"
+      handle="${untrusted_handle}"
+      delete_rule_handle "${qube}" "${chain}" "${handle}"
+    done
+  fi
+}
+
+forward() {
+  from_qube="${1}"
+  to_qube="${2}"
+  create_net_dir "${from_qube}"
+
+  unset dev
+  ## TODO: Handle multiple interfaces in upstream.
+  untrusted_dev="$(run_qube "${from_qube}" ip -4 route | \
+                    awk '/^default via /{print $5}' | head -1)"
+  validate_dev "${from_qube}" "${untrusted_dev}"
+  dev="${untrusted_dev}"
+
+  unset from_ip
+  untrusted_from_ip="$(run_qube "${from_qube}" ip -4 -o addr show dev \
+                        "${dev}" | awk '{print $4}' | cut -d "/" -f 1)"
+  validate_ipv4 "${from_qube}" "${untrusted_from_ip}"
+  from_ip="${untrusted_from_ip}"
+
+  to_ip="$(qvm-prefs --get -- "${to_qube}" ip)"
+  to_ip_escaped="$(printf '%s\n' "${to_ip}" | tr "." "-")"
+  hook="${hook_prefix}${to_ip}-${proto}-${port}.sh"
+
+  if test "${from_ip}" = "None"; then
+    from_ip=""
+  fi
+
+  dnat_chain="custom-pf-${to_ip_escaped}"
+  dnat_rule="iifname ${dev} ip saddr ${lan_ip} ${proto} dport ${port} ct"
+  dnat_rule="${dnat_rule} state established,related,new counter dnat to"
+  dnat_rule="${dnat_rule} ${to_ip}"
+  forward_chain="custom-forward"
+  forward_rule="iifname ${dev} ip saddr ${lan_ip} ip daddr ${to_ip} ${proto}"
+  forward_rule="${forward_rule} dport ${port} ct state"
+  forward_rule="${forward_rule} established,related,new counter accept"
+  dnat_policy="type nat hook prerouting priority filter +1; policy accept;"
+  dnat_policy="{ ${dnat_policy} }"
+  full_rule="nft 'add chain ip qubes ${dnat_chain} ${dnat_policy}
+add rule ip qubes ${dnat_chain} ${dnat_rule}
+add rule ip qubes ${forward_chain} ${forward_rule}'"
+
+  delete_rule "${from_qube}" "${forward_chain}" "${forward_rule}"
+  delete_rule "${from_qube}" "${dnat_chain}" "${dnat_rule}"
+  if test "${action}" = "del"; then
+    printf '%s\n' "info: ${from_qube}: deleting rules" >&2
+    run_qube "${from_qube}" "rm -f ${hook}"
+  else
+    msg="adding forward rule dev ${dev} saddr ${lan_ip} daddr ${to_ip}"
+    printf '%s\n' "info: ${from_qube}: ${msg}" >&2
+    run_qube "${from_qube}" "${full_rule}"
+
+    if test "${persistent}" = "1"; then
+      class="$(qvm-prefs --get -- "${from_qube}" klass)"
+      if test "${class}" = "DispVM"; then
+        from_qube="$(qvm-prefs --get -- "${from_qube}" template)"
+      fi
+
+      full_rule="#!/bin/sh
+get_handle(){
+  chain=\\\${1}
+  rule=\\\${2}
+  nft --handle --stateless list chain ip qubes \\\${chain} | \\\
+    tr -d '\\\"' | grep -e '^\\\s\\\+\\\${rule} \\# handle ' | \\\
+    awk '{print \\\$NF}' | tr \\\"\\\n\\\" \\\" \\\"
+}
+
+forward_handle=\\\$(get_handle ${forward_chain} \\\"${forward_rule}\\\")
+if test -n \\\"\\\${forward_handle:-}\\\"; then
+  for h in \\\${forward_handle}; do
+    nft delete rule ip qubes ${forward_chain} handle \\\${h}
+  done
+fi
+
+dnat_handle=\\\$(get_handle ${dnat_chain} \\\"${dnat_rule}\\\")
+if test -n \\\"\\\${dnat_handle:-}\\\"; then
+  for h in \\\${dnat_handle}; do
+    nft delete rule ip qubes ${dnat_chain} handle \\\${h}
+  done
+fi
+
+${full_rule}"
+
+      create_net_dir "${from_qube}"
+      run_qube "${from_qube}" \
+        "printf '%s\n' \"${full_rule}\" | tee -- \"${hook}\" >/dev/null"
+      run_qube "${from_qube}" "chmod -- +x ${hook}"
+    fi
+  fi
+}
+
+input() {
+  qube="${1}"
+  to_ip="$(qvm-prefs --get -- "${qube}" ip)"
+  hook="${hook_prefix}${to_ip}-${proto}-${port}.sh"
+  create_net_dir "${qube}"
+
+  custom_input_rule="${proto} dport ${port} ip daddr ${to_ip} ct state new"
+  custom_input_rule="${custom_input_rule} counter accept"
+  input_rule="nft add rule ip qubes custom-input ${custom_input_rule}"
+
+  delete_rule "${qube}" "custom-input" "${custom_input_rule}"
+  if test "${action}" = "del"; then
+    printf '%s\n' "info: ${qube}: deleting rules" >&2
+    run_qube "${qube}" "rm -f ${hook}"
+  else
+    printf '%s\n' "info: ${qube}: adding input rule daddr ${to_ip}" >&2
+    run_qube "${qube}" "${input_rule}"
+    if test "${persistent}" = "1"; then
+      input_rule="#!/bin/sh
+get_handle(){
+  chain=\\\${1}
+  rule=\\\${2}
+  nft --handle --stateless list chain ip qubes \\\${chain} | \\\
+    tr -d '\\\"' | grep -e '^\\\s\\\+\\\${rule} \\# handle ' | \\\
+    awk '{print \\\$NF}' | tr \\\"\\\n\\\" \\\" \\\"
+}
+
+input_handle=\\\$(get_handle custom-input \\\"${custom_input_rule}\\\")
+if test -n \\\"\\\${input_handle:-}\\\"; then
+  for h in \\\${input_handle}; do
+    nft delete rule ip qubes custom-input handle \\\${h}
+  done
+fi
+
+${input_rule}"
+
+      run_qube "${qube}" \
+        "printf '%s\n' \"${input_rule}\" | tee -- \"${hook}\" >/dev/null"
+      run_qube "${qube}" "chmod -- +x ${hook}"
+    fi
+  fi
+}
+
+get_lan(){
+  qube="${1}"
+
+  unset dev
+  ## TODO: Handle multiple interfaces in upstream.
+  untrusted_dev="$(run_qube "${qube}" ip -4 route | \
+                    awk '/^default via /{print $5}' | head -1)"
+  validate_dev "${qube}" "${untrusted_dev}"
+  dev="${untrusted_dev}"
+
+  if test -z "${dev}"; then
+    printf '%s\n' "error: ${qube}: could not find any device that is up" >&2
+    exit 1
+  fi
+
+  unset lan_ip
+  untrusted_lan_ip="$(run_qube "${qube}" ip -4 route show dev "${dev}" \
+                      prot kernel | cut -d " " -f 1)"
+  validate_ipv4 "${qube}" "${untrusted_lan_ip}"
+  lan_ip="${untrusted_lan_ip}"
+
+  if test -z "${lan_ip}"; then
+    printf '%s\n' "error: ${qube}: could not find LAN from device ${dev}" >&2
+    exit 1
+  fi
+}
+
+test_qvm_run(){
+  qube="${1}"
+  # shellcheck disable=SC2310
+  if ! run_qube "${qube}" printf '%s\n' "Test QUBESRPC" >/dev/null 2>&1; then
+    err_msg="error: ${qube}: RPC qubes.VMShell failed, use a different qube"
+    printf '%s\n' "${err_msg}" >&2
+    exit 1
+  fi
+}
+
+recurse_netvms() {
+  cmd="${1}"
+  rec_qube="${2}"
+  rec_netvm="$(qvm-prefs --get -- "${rec_qube}" netvm)"
+  if test -n "${rec_netvm}" && test "${rec_netvm}" != "None"; then
+    case "${cmd}" in
+      show-upstream) test_qvm_run "${rec_qube}";;
+      apply-rules) forward "${rec_netvm}" "${rec_qube}";;
+      *) printf '%s\n' "Unsupported command passed to recurse_netvms()" >&2
+        exit 1
+        ;;
+    esac
+    recurse_netvms "${cmd}" "${rec_netvm}"
+  fi
+  case "${cmd}" in
+    show-upstream) get_lan "${rec_qube}";;
+    apply-rules) ;;
+    *) printf '%s\n' "Unsupported command passed to recurse_netvms()" >&2
+      exit 1
+      ;;
+  esac
+}
+
+usage() {
+  printf '%s\n' "Usage: ${0##*/} OPTIONS
+Option syntax:
+  --action ACTION --qube QUBE --port PORT --proto PROTO [--persistent]
+Options:
+  -a, --action ACTION        add or delete a rule (add, del)
+  -q, --qube QUBE            qube name which holds the service to be exposed
+  -p, --port PORT            port number to be exposed
+  -n, --proto PROTO          protocol the service uses (tcp, udp)
+  -s, --persistent           persist rules across reboots
+Example:
+  ${0##*/} --action add --qube work --port 22 --proto tcp
+  ${0##*/} --action add --qube work --port 444 --proto udp --persistent
+  ${0##*/} --action del --qube work --port 22 --proto tcp
+  ${0##*/} --action del --qube work --port 444 --proto udp
+Note: Defaults to temporary rules
+Warn: Persistent rules of disposable netvm are saved to its template" >&2
+  exit 1
+}
+
+check_opt(){
+  case "${action:-}" in
+    add|del);;
+    *)
+      printf '%s\n' "error: action must be either 'add' or 'del'" >&2
+      exit 1
+      ;;
+  esac
+
+  case "${proto:-}" in
+    tcp|udp);;
+    *)
+      printf '%s\n' "error: protocol must be only 'tcp' or 'udp'" >&2
+      exit 1
+      ;;
+  esac
+
+  case "${port:-}" in
+    ""|*[!0-9]*)
+      printf '%s\n' "error: port must be only numbers" >&2
+      exit 1
+      ;;
+    *)
+  esac
+
+  if test "${port}" -ge 1 && test "${port}" -le 65535; then
+    true
+  else
+    printf '%s\n' "error: port must be in range 1-65535" >&2
+    exit 1
+  fi
+
+  if test -z "${target_qube:-}"; then
+    printf '%s\n' "error: qube name not provided" >&2
+    exit 1
+  fi
+
+  if ! qvm-check -- "${target_qube}" >/dev/null 2>&1; then
+    printf '%s\n' "error: qube '${target_qube}' not found." >&2
+    exit 1
+  fi
+}
+
+hook_dir="/rw/config/network-hooks.d"
+hook_prefix="${hook_dir}/90-port-forward-"
+persistent=""
+
+if ! OPTS=$(getopt -o h,a:q:p:n:s \
+  --long help,action:,qube:,port:,proto:,persistent -n "${0}" -- "${@}")
+then
+  printf '%s\n' "An error occurred while parsing options." >&2
+  exit 1
+fi
+
+eval set -- "${OPTS}"
+if test "${OPTS}" = " --"; then
+  usage
+fi
+while test "${#}" -gt "0"; do
+  case "${1}" in
+    -a|--action) action="${2}"; shift;;
+    -q|--qube) target_qube="${2}"; shift;;
+    -p|--port) port="${2}"; shift;;
+    -n|--proto) proto="${2}"; shift;;
+    -s|--persistent) persistent=1; shift;;
+    -h|--help) usage;;
+    --) break;;
+    *) printf '%s\n' "Unsupported option" >&2; exit 1;;
+  esac
+  shift
+done
+
+check_opt
+recurse_netvms show-upstream "${target_qube}"
+input "${target_qube}"
+recurse_netvms apply-rules "${target_qube}"

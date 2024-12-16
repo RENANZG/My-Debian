@@ -1,0 +1,22 @@
+{#
+SPDX-FileCopyrightText: 2024 Benjamin Grande M. S. <ben.grande.b@gmail.com>
+
+SPDX-License-Identifier: AGPL-3.0-or-later
+#}
+
+base:
+  'dom0':
+    - match: nodegroup
+    - electrum.create
+  'sys-bitcoin-gateway':
+    - sys-bitcoin.configure-gateway
+  'tpl-electrum-builder':
+    - electrum.install-builder
+  'tpl-electrum':
+    - electrum.install
+  'disp-electrum-builder':
+    - electrum.configure-builder
+  'electrum':
+    - electrum.configure
+  'electrum-hot':
+    - electrum.configure-hot

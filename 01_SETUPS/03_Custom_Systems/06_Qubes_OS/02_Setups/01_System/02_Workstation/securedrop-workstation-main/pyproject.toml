@@ -1,0 +1,115 @@
+[tool.poetry]
+name = "securedrop-workstation-dom0-config"
+version = "0.0.0"
+description = ""
+authors = ["SecureDrop Team"]
+license = "AGPLv3+"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+[tool.poetry.group.dev.dependencies]
+# In production these are installed as a system package so match the
+# versions exactly
+PyQt5 = "=5.15.9"
+PyQt5-Qt5 = "=5.15.2"
+PyQt5-sip = "=12.11.0"
+
+mypy = "^1.11.2"
+pytest = "^8.3.3"
+pytest-cov = "^5.0.0"
+types-setuptools = "^75.1.0"
+ruff = "^0.6.7"
+python-debian = "^0.1.49"
+pysequoia = "^0.1.24"
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    # pycodestyle errors
+    "E",
+    # pyflakes
+    "F",
+    # isort
+    "I",
+    # flake8-gettext
+    "INT",
+    # flake8-pie
+    "PIE",
+    # pylint
+    "PL",
+    # flake8-pytest-style
+    "PT",
+    # flake8-pyi
+    "PYI",
+    # flake8-return
+    "RET",
+    # flake8-bandit
+    "S",
+    # flake8-simplify
+    "SIM",
+    # pyupgrade
+    "UP",
+    # pycodestyle warnings
+    "W",
+    # Unused noqa directive
+    "RUF100",
+]
+ignore = [
+    # code complexity checks that we fail
+    "PLR0911",
+    "PLR0913",
+    "PLR0915",
+    # magic-value-comparison, too many violations for now
+    "PLR2004",
+    # hardcoded passwords, false positive
+    "S105",
+    # it's fine to use /tmp in dom0, since it's not a multiuser environment
+    "S108",
+    # flags every instance of subprocess
+    "S603",
+    # we trust $PATH isn't hijacked
+    "S607",
+    # superflous-else- rules, find they hurt readability
+    "RET505",
+    "RET506",
+    "RET507",
+    "RET508",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**.py" = [
+    # Use of `assert` detected
+    "S101",
+    # Tests use /tmp
+    "S108",
+    # Use a regular `assert` instead of unittest-style `assertEqual`
+    "PT009",
+]
+"sdw_util/Util.py" = [
+    # lock functions return file handles, so it's safe to ignore here
+    "SIM115",
+]
+
+[tool.mypy]
+python_version = "3.11"
+# No stubs for qubesadmin
+ignore_missing_imports = true
+# These are individual scripts, not a package/modules
+scripts_are_modules = true
+files = [
+    "*.py",
+    "securedrop_salt/remove-tags.py",
+    "securedrop_salt/securedrop-login",
+    "scripts/*.py",
+    "files/*.py",
+]
+exclude = [
+    "launcher/", # Moving to sd-updater
+    "tests/",
+]
+
+[tool.pytest.ini_options]
+addopts = "--cov-report term-missing --cov=sdw_notify --cov=sdw_updater --cov=sdw_util"

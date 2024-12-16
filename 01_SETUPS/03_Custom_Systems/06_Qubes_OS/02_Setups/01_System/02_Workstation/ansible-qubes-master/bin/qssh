@@ -1,0 +1,119 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+import subprocess
+import socket
+import urllib
+
+
+def is_scp():
+    return os.path.basename(sys.argv[0]) in ("scp", "qscp")
+
+
+def find_scp_hostname(parms):
+  overridden_host = None
+  if len(parms) > 1 and parms[0] == "--vmname":
+      overridden_host = parms[1]
+      parms = parms[2:]
+      if len(parms) > 1 and parms[0] == "--management-proxy":
+          proxy = parms[1]
+          parms = parms[2:]
+          overridden_host = overridden_host + ".__%s__" % proxy
+      overridden_host = overridden_host + ".__qubes__"
+  host = None
+  while host is None:
+      if parms[-1].startswith("-"):
+          parms = parms[:-1]
+          continue
+      if any(parms[-2].startswith(x)
+             for x in ["-c", "-F", "-i", "-l", "-o", "-P", "-S"]):
+          parms = parms[:-2]
+      host = parms[-1]
+  host, _ = host.split(":", 1)
+  if overridden_host:
+      parms[-1] = overridden_host + parms[-1][len(host):]
+  return overridden_host if overridden_host else host, parms
+
+
+def find_hostname_and_command(parms):
+  host = None
+  overridden_host = None
+  if len(parms) > 1 and parms[0] == "--vmname":
+      overridden_host = parms[1]
+      parms = parms[2:]
+      if len(parms) > 1 and parms[0] == "--management-proxy":
+          proxy = parms[1]
+          parms = parms[2:]
+          overridden_host = overridden_host + ".__%s__" % proxy
+      overridden_host = overridden_host + ".__qubes__"
+  rest = parms
+  while True:
+    if not rest:
+      break
+    if rest[0] == "--":
+      if host is None:
+        _, host, rest = rest[0], rest[1], rest[2:]
+      else:
+        _, rest = rest[0], rest[1:]
+      break
+    elif rest[0].startswith("-o") and len(rest[0]) > 2:
+      _, rest = rest[0], rest[1:]
+    elif rest[0].startswith("-o"):
+      _, rest = rest[0:1], rest[2:]
+    elif rest[0].startswith("-"):
+      _, rest = rest[0], rest[1:]
+    else:
+      if host is None:
+        host, rest = rest[0], rest[1:]
+      else:
+        break
+  host, port = urllib.splitport(host)
+  return overridden_host if overridden_host else host, rest
+
+
+def is_qubes_host(host):
+  return host.endswith(".__qubes__")
+
+
+def get_vmname_and_management_proxy(hostname):
+  host = hostname
+  host = host[:-len(".__qubes__")]
+  if host.endswith("__"):
+    host, proxy, _ = host.rsplit("__", 2)
+    if not host.endswith("."):
+        raise ValueError("invalid proxied host %r" % hostname)
+    return host[:-1], proxy
+  return host, None
+
+
+parms = sys.argv[1:]
+
+# SCP execution path.
+if is_scp():
+  host, rest = find_scp_hostname(parms)
+
+  if not is_qubes_host(host):
+    os.execv("/usr/bin/scp", ["/usr/bin/scp"] + parms)
+
+  path_to_this_file = os.path.dirname(__file__)
+  path_to_ssh = os.path.join(path_to_this_file, "qssh")
+  scmd = ["/usr/bin/scp"] + ["-S", path_to_ssh] + rest
+  os.execvp(scmd[0], scmd)
+
+host, rest = find_hostname_and_command(parms)
+
+# SSH execution path.
+if not is_qubes_host(host):
+  os.execv("/usr/bin/ssh", ["/usr/bin/ssh"] + parms)
+
+path_to_bombshell = os.path.abspath(os.path.join(os.path.dirname(__file__), "bombshell-client"))
+vmname, proxy = get_vmname_and_management_proxy(host)
+if proxy:
+  assert 0, "While connecting to %s (VM name %s): management proxy not supported yet" % (host, vmname)
+
+cmd = [
+      path_to_bombshell,
+      vmname,
+  ] + ["sh", "-c", " ".join(rest)]
+os.execvp(cmd[0], cmd)

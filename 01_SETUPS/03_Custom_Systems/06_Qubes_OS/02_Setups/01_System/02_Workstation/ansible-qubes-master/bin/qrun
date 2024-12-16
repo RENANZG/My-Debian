@@ -1,0 +1,64 @@
+#!/usr/bin/python3 -u
+
+try:
+    from pipes import quote
+except ImportError:
+    from shlex import quote
+import os
+import subprocess
+import sys
+
+argv = list(sys.argv[1:])
+if argv[0].startswith("--proxy="):
+    remotehost = argv[0][8:]
+    argv = argv[1:]
+else:
+    remotehost = None
+host, parms = argv[0], argv[1:]
+
+path_to_bombshell = os.path.join(os.path.dirname(__file__), "bombshell-client")
+
+if os.getenv("BOMBSHELL_DEBUG"):
+    cmd = [
+        path_to_bombshell,
+        "-d",
+        host,
+    ] + parms
+else:
+    cmd = [
+        path_to_bombshell,
+        host,
+    ] + parms
+
+if remotehost:
+    args = " ".join(quote(x) for x in parms)
+    with open(path_to_bombshell, "r") as f:
+        poop = quote(f.read())
+    therest_template = ('''
+        set -e
+        which bombshell-client >/dev/null 2>&1 && {
+            exec bombshell-client %s %s %s
+        } || {
+            echo %s > .bombshell-client.tmp
+            chmod +x .bombshell-client.tmp
+            mv -fT .bombshell-client.tmp .bombshell-client
+            exec ./.bombshell-client %s %s %s
+        }
+    ''')
+    therest = therest_template % (
+        "-d" if os.getenv("BOMBSHELL_DEBUG") else "",
+        quote(host),
+        args,
+        poop,
+        "-d" if os.getenv("BOMBSHELL_DEBUG") else "",
+        quote(host),
+        args,
+    )
+    cmd = [
+        'ssh',
+        '-o', 'BatchMode yes',
+        remotehost,
+        therest,
+    ]
+
+os.execvp(cmd[0], cmd)

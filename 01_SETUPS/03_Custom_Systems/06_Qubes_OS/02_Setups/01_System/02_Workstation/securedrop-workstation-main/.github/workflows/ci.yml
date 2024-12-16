@@ -1,0 +1,55 @@
+---
+name: ci
+
+on: [push, pull_request, merge_group]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    container:
+      image: registry.fedoraproject.org/fedora:37
+    steps:
+      - run: dnf install -y git make
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          make test-deps
+          pip install poetry==1.8.2
+          poetry install --no-ansi
+      - name: Run linters
+        run: |
+          git config --global --add safe.directory '*'
+          make lint
+  build-rpm:
+    runs-on: ubuntu-latest
+    container:
+      image: registry.fedoraproject.org/fedora:37
+    steps:
+      - run: dnf install -y git make
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          make build-deps
+      - name: Build RPM
+        run: |
+          git config --global --add safe.directory '*'
+          make build-rpm
+      - name: Check reproducibility
+        run: |
+          make test-deps
+          make reprotest
+  launcher-tests:
+    runs-on: ubuntu-latest
+    container:
+      image: registry.fedoraproject.org/fedora:37
+    steps:
+      - run: dnf install -y make
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          make test-deps
+          pip install poetry==1.8.2
+          poetry install --no-ansi
+      - name: Run launcher tests
+        run: |
+          make test-launcher

@@ -1,0 +1,63 @@
+#!/bin/sh
+
+# SPDX-FileCopyrightText: 2023 - 2024 Benjamin Grande M. S. <ben.grande.b@gmail.com>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+set -eu
+
+case "${GIT_TRACE_HELPER:-}" in
+  true|1) set -x;;
+  *) ;;
+esac
+
+usage(){
+  printf '%s\n' "Usage: ${helper} [<qube>] [<repository>]" >&2
+  printf '%s\n' "Note: qube defaults to @default" >&2
+  printf '%s\n' "Note: repository defaults to current working repository" >&2
+  exit 1
+}
+
+is_git_repo(){
+  if ! git rev-parse --show-toplevel >/dev/null 2>&1; then
+    printf '%s\n' "Error: CWD is not a git repository" >&2
+    printf '%s\n' "Error: Run from a repository or provide its name" >&2
+    usage
+  fi
+}
+
+helper="${0##*/git-}"
+case "${1-}" in
+  -h|--?help) usage;;
+  "") authority="@default";;
+  *) authority="${1}";;
+esac
+case "${2-}" in
+  "")
+    is_git_repo
+    repo="$(git rev-parse --show-toplevel)"
+    repo="$(basename "${repo}")"
+    ;;
+  *) repo="${2}";;
+esac
+
+rpc="GitInit"
+vendor="qusal"
+default_qube="sys-git"
+rpc_cmd="${vendor}.${rpc}+${repo}"
+
+if command -v qrexec-client-vm >/dev/null; then
+  exec qrexec-client-vm -tT -- "${authority}" "${rpc_cmd}"
+elif command -v qrexec-client >/dev/null; then
+  if test "${authority}" = "@default"; then
+    authority="${default_qube}"
+  fi
+  if ! qvm-check -- "${authority}" >/dev/null 2>&1; then
+    die "Qube doesn't exist: '${authority}'"
+  fi
+  qvm-start --skip-if-running -- "${authority}"
+  rpc_cmd="DEFAULT:QUBESRPC ${rpc_cmd} dom0"
+  exec qrexec-client -tT -d "${authority}" -- "${rpc_cmd}"
+fi
+
+die "Qrexec programs not found: qrexec-client-vm, qrexec-client"

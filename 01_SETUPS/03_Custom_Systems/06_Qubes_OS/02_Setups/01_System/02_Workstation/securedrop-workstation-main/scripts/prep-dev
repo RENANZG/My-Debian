@@ -1,0 +1,41 @@
+#!/usr/bin/bash
+# Developer-oriented utility script for deploying Saltstack config
+# files for the SecureDrop Workstation dev env. Installs the latest
+# locally built RPM in order to deploy the Salt config.
+set -e
+set -u
+set -o pipefail
+
+
+# The dest directory in dom0 is not customizable.
+dom0_dev_dir="$HOME/securedrop-workstation"
+
+function find_latest_rpm() {
+    # Look up which version of dom0 we're using.
+    # Qubes 4.1 is fedora-32, Qubes 4.2 fedora-37.
+    fedora_version="$(rpm --eval '%{fedora}')"
+    find "${dom0_dev_dir}/rpm-build/RPMS/" -type f -iname "*fc${fedora_version}.noarch.rpm" -print0 | xargs -r -0 ls -t | head -n 1
+}
+
+latest_rpm="$(find_latest_rpm)"
+if [[ -z "$latest_rpm" ]]; then
+    echo "Could not find RPM!"
+    exit 1
+fi
+
+echo "Deploying Salt config..."
+echo "Uninstalling any previous RPM versions..."
+sudo dnf clean all
+sudo dnf remove -y securedrop-workstation-dom0-config || true
+echo "Installing RPM at $latest_rpm ..."
+sudo dnf install -y "$latest_rpm"
+
+# Always copy secrets, these won't be configured as part
+# of the RPM installation.
+echo "Copying config secrets into place..."
+for f in config.json sd-journalist.sec ; do
+    sudo cp -v "$f" /usr/share/securedrop-workstation-dom0-config/
+    sudo chmod ugo+r /usr/share/securedrop-workstation-dom0-config/$f
+    sudo cp -v "$f" /srv/salt/securedrop_salt/
+    sudo chmod ugo+r /srv/salt/securedrop_salt/$f
+done

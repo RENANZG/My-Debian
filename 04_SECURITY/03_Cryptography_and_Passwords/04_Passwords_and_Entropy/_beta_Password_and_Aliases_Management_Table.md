@@ -29,16 +29,16 @@
       font-weight: bold;
     }
     .critical {
-      background-color: #ffcccc;
+      background-color: #bd2727;
     }
     .high {
-      background-color: #ffeb99;
+      background-color: #e79e27;
     }
     .moderate {
-      background-color: #ccffcc;
+      background-color: #e7e532;
     }
     .low {
-      background-color: #cce5ff;
+      background-color: #5ad840;
     }
 </style>
 </head>

@@ -1,0 +1,37 @@
+# -*- coding: utf-8 -*-
+# vim: set syntax=yaml ts=2 sw=2 sts=2 et :
+
+base:
+  'dom0':
+    - my-config.anon-whonix
+    - my-config.personal
+    - my-config.personal-dev
+    - my-config.personal-multimedia
+    - my-config.personal-pub
+    - my-config.powertop
+    - my-config.untrusted
+    - my-config.vault
+  'custom-personal':
+    - my-config.chromium
+    - my-config.keybase
+    - my-config.office-tools
+    - my-config.security-tools
+    - my-config.yubikey
+  'development':
+    - my-config.chromium
+    - my-config.dev-tools
+    - my-config.docker
+    - my-config.git
+    - my-config.golang-dev
+    - my-config.latex-dev
+    - my-config.nodejs-dev
+    - my-config.python-dev
+    - my-config.security-tools
+    - my-config.vim
+  'multimedia':
+    - my-config.chromium
+    - my-config.multimedia-tools
+    - my-config.security-tools
+  'personal-dev':
+    - my-config.git-config
+    - my-config.vim-config

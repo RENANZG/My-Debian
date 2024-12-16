@@ -1,0 +1,86 @@
+#!/bin/sh
+
+# SPDX-FileCopyrightText: 2023 - 2024 Benjamin Grande M. S. <ben.grande.b@gmail.com>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+set -eu
+
+usage(){
+  printf '%s\n' "Usage: ${helper} (git-upload-pack|git-receive-pack)"
+  printf '%s\n' "Note: ${helper} is supposed to be called by ${parent_helper}"
+  exit 1
+}
+
+die(){
+  printf '%s\n' "Error: ${1}" >&2
+  exit 1
+}
+
+log(){
+  case "${GIT_TRACE_REMOTE_HELPER:-}" in
+    true|1) printf '%s\n' "${@}" >&2;;
+    *) ;;
+  esac
+}
+
+## Establish capability working.
+log "->"
+printf '\n'
+
+helper="${0##*/git-}"
+parent_helper="${helper%-*}"
+scheme="${helper##*remote-}"; scheme="${scheme%%-*}"
+
+case "${1-}" in
+  -h|--?help|"") usage;;
+  *) arg="${1}";;
+esac
+
+test -n "${remote-}" || die "Remote is unset"
+test -n "${url-}" || die "URL is unset"
+test -n "${authority-}" || die "URL Authority is unset"
+test -n "${path-}" || die "URL Path is unset"
+: "${query-}"
+test -n "${pushurl-}" || die "PushURL is unset"
+test -n "${pushauthority-}" || die "PushURL Authority is unset"
+test -n "${pushpath-}" || die "PushURL Path is unset"
+: "${pushquery-}"
+
+case "${arg}" in
+  git-upload-pack) rpc=GitFetch;;
+  git-receive-pack) rpc=GitPush; url="${pushurl}";
+    authority="${pushauthority}"; path="${pushpath}"; query="${pushquery}";;
+  "") die "${helper} requires an argument";;
+  *) die "${helper} called with unsupported argument: '${arg}'";;
+esac
+
+test -n "${path}" || die "Repository name can't be empty"
+
+vendor="qusal"
+default_qube="sys-git"
+rpc_cmd="${vendor}.${rpc}+${path}"
+
+if printf '%s\n' "${query}" | \
+  grep -qE -e "(^|&)verify_signatures=(1|[tT]rue|yes|on)($|&)"
+then
+  die "Remote helper does not support signature verification yet"
+fi
+
+if command -v qrexec-client-vm >/dev/null; then
+  log "->" qrexec-client-vm -T -- "${authority}" "${rpc_cmd}"
+  exec qrexec-client-vm -T -- "${authority}" "${rpc_cmd}"
+elif command -v qrexec-client >/dev/null; then
+  if test "${authority}" = "@default"; then
+    authority="${default_qube}"
+  fi
+  if ! qvm-check -- "${authority}" >/dev/null 2>&1; then
+    die "Qube doesn't exist: '${authority}'"
+  fi
+  qvm-start --skip-if-running -- "${authority}"
+  rpc_cmd="DEFAULT:QUBESRPC ${rpc_cmd} dom0"
+  log "->" qrexec-client -T -d "${authority}" -- "${rpc_cmd}"
+  exec qrexec-client -T -d "${authority}" -- "${rpc_cmd}"
+fi
+
+die "Qrexec programs not found: qrexec-client-vm, qrexec-client"

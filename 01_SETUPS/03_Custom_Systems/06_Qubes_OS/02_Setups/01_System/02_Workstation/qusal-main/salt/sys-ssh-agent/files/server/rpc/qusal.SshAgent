@@ -1,0 +1,39 @@
+#!/bin/sh
+
+# SPDX-FileCopyrightText: 2023 - 2024 Benjamin Grande M. S. <ben.grande.b@gmail.com>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+set -eu
+
+die(){
+  printf '%s\n' "error: ${1}" >&2
+  exit 1
+}
+
+# shellcheck disable=SC2154
+untrusted_agent="${QREXEC_SERVICE_ARGUMENT}"
+
+if test -z "${untrusted_agent}"; then
+  die "Agent name is empty"
+fi
+
+if ! (printf '%s\n' "${untrusted_agent}" | \
+  grep -q -e "^[A-Za-z0-9][A-Za-z0-9_.-]\+$")
+then
+  msg="Forbidden characters in agent name."
+  msg="${msg} Allowed chars: letters, numbers, hyphen, underscore and dot."
+  msg="${msg} Name cannot begin with hyphen, underscore or dot"
+  die "${msg}"
+fi
+
+## Length arbitrarily set.
+if test "${#untrusted_agent}" -gt 128; then
+  die "Repository name is too long: ${#untrusted_agent}"
+fi
+
+agent="${untrusted_agent}"
+socket="/tmp/qusal-ssh-agent/${agent}.sock"
+
+qvm-ssh-agent add "${agent}" >/dev/null
+exec socat STDIO UNIX-CLIENT:"${socket}"

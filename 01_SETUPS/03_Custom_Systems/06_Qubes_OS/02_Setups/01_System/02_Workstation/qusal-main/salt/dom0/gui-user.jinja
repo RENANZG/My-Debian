@@ -1,0 +1,9 @@
+{#
+SPDX-FileCopyrightText: 2024 Benjamin Grande M. S. <ben.grande.b@gmail.com>
+
+SPDX-License-Identifier: AGPL-3.0-or-later
+#}
+
+{% set gui_user = salt["group.info"]("qubes").get("members")[0] -%}
+{% set gui_user_id = salt["user.info"](gui_user).get("uid") -%}
+{% set gui_user_home = salt["user.info"](gui_user).get("home") -%}

@@ -62,8 +62,7 @@ A curated list of awesome projects to simplify and improve paper scanning.
     Interactive post-processing tool for scanned pages (open source).
 - [ScanTailor Advanced] -
     Merges features of forks, adds new features, and includes fixes.
-- [Skarynka] - Software to scan and process im
-ges to build books.
+- [Skarynka] - Software to scan and process images to build books.
 - [YASW] - Yet Another Scan Wizard (open source).
 
 [BookDrive Editor Pro]: http://atiz.com/bookdrive-editor-pro

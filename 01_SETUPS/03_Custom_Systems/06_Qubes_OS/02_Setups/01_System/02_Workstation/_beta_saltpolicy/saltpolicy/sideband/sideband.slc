@@ -1,0 +1,85 @@
+# Sideband is a LXMF (Low Bandwidth eXtensible Messaging Format) client for Android, Linux and macOS allowing you to communicate with people or LXMF-compatible systems over Reticulum networks using LoRa, Packet Radio, WiFi, I2P, or anything else Reticulum supports.
+
+{% if grains['id'] == 'dom0' %}
+
+install-debian-12-minimum:
+  cmd.run:
+    - name: qvm-template install debian-12-minimum
+    - unless: qvm-ls | grep -q debian-12-minimum
+
+vms-depends:
+  qvm.template_installed:
+    - name: debian-12-minimum
+
+clone-sideband-template:
+  qvm.clone:
+    - name: sideband-template
+    - source: debian-12-minimum
+
+sideband-appvm-present:
+  qvm.present:
+    - name: sideband
+    - template: sideband-template
+    - label: purple
+    - class: AppVM
+
+sideband-appvm-prefs:
+  qvm.prefs:
+    - name: sideband
+    - netvm: sys-whonix
+
+{% elif grains['id'] == 'tpl-sideband' %}
+
+install-sideband-dependencies:
+  pkg.installed:
+    - pkgs:
+      - pipx
+      - python3-pyaudio
+      - python3-dev
+      - build-essential
+      - libopusfile0
+      - portaudio19-dev
+      - codec2
+      - xclip
+      - xsel
+    - refresh: True
+
+install-sideband:
+  cmd.run:
+    - name: pipx install sbapp --python python3.12
+    - unless: test -x ~/.local/bin/sbapp
+    - user: user
+
+ensure-pipx-path:
+  cmd.run:
+    - name: pipx ensurepath
+    - user: user
+
+verify-sideband-install:
+  cmd.run:
+    - name: sbapp --version
+    - user: user
+
+{% elif grains['id'] == 'sideband' %}
+
+setup-sideband-config:
+  file.directory:
+    - name: /home/user/.config/sideband
+    - user: user
+    - group: user
+    - mode: 0750
+
+run-sideband-first-time:
+  cmd.run:
+    - name: sbapp
+    - cwd: /home/user
+    - user: user
+
+run-sideband-daemon:
+  cmd.run:
+    - name: sbapp --daemon
+    - cwd: /home/user
+    - user: user
+    - bg: true
+
+{% endif %}

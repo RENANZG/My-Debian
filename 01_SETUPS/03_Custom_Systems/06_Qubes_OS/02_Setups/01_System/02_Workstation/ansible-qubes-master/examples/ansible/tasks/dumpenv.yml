@@ -1,0 +1,19 @@
+---
+
+- name: Remove previous directory
+  file:
+    path: '/tmp/dump'
+    state: 'absent'
+  delegate_to: 'localhost'
+
+- name: Create directory
+  file:
+    path: '/tmp/dump'
+    state: 'directory'
+  delegate_to: 'localhost'
+
+- name: Dump all vars
+  template:
+    src: 'template/dumpenv/dumpenv.j2'
+    dest: '/tmp/dump/{{ inventory_hostname }}'
+  delegate_to: 'localhost'

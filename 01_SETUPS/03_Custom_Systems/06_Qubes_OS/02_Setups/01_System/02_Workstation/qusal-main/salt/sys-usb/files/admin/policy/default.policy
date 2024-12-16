@@ -1,0 +1,112 @@
+# SPDX-FileCopyrightText: 2023 - 2024 Neowutran <https://neowutran.ovh>
+# SPDX-FileCopyrightText: 2023 - 2024 Benjamin Grande M. S. <ben.grande.b@gmail.com>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+## Do not modify this file, create a new policy with with a lower number in the
+## file name instead. For example `30-user.policy`.
+
+##! Section: Input
+{% if salt['pillar.get']('qvm:sys-usb:mouse-action', 'ask') == 'ask' -%}
+  {%- set mouse_action = 'ask default_target=dom0' -%}
+{% elif salt['pillar.get']('qvm:sys-usb:mouse-action', 'ask') == 'allow' -%}
+  {%- set mouse_action = 'allow' -%}
+{% else -%}
+  {%- set mouse_action = 'deny' -%}
+{% endif -%}
+
+{% if salt['pillar.get']('qvm:sys-usb:keyboard-action', 'deny') == 'ask' -%}
+  {%- set keyboard_action = 'ask default_target=dom0' -%}
+{% elif salt['pillar.get']('qvm:sys-usb:keyboard-action', 'deny') == 'allow' -%}
+  {%- set keyboard_action = 'allow' -%}
+{% else -%}
+  {%- set keyboard_action = 'deny' -%}
+{% endif -%}
+
+{% if salt['pillar.get']('qvm:sys-usb:tablet-action', 'deny') == 'ask' -%}
+  {%- set tablet_action = 'ask default_target=dom0' -%}
+{% elif salt['pillar.get']('qvm:sys-usb:tablet-action', 'deny') == 'allow' -%}
+  {%- set tablet_action = 'allow' -%}
+{% else -%}
+  {%- set tablet_action = 'deny' -%}
+{% endif -%}
+
+qubes.InputMouse    * @tag:usbvm @adminvm {{ mouse_action }}
+qubes.InputMouse    * @tag:usbvm @adminvm deny
+
+qubes.InputKeyboard * @tag:usbvm @adminvm {{ keyboard_action }}
+qubes.InputKeyboard * @tag:usbvm @adminvm deny
+
+qubes.InputTablet   * @tag:usbvm @adminvm {{ tablet_action }}
+qubes.InputTablet   * @tag:usbvm @adminvm deny
+
+##! CTAP
+ctap.ClientPin   * @anyvm @tag:usbvm ask user=root default_target=disp-{{ sls_path }}
+ctap.ClientPin   * @anyvm @default   ask user=root default_target=disp-{{ sls_path }}
+ctap.ClientPin   * @anyvm @anyvm     deny
+
+ctap.GetInfo     * @anyvm @tag:usbvm ask user=root default_target=disp-{{ sls_path }}
+ctap.GetInfo     * @anyvm @default   ask user=root default_target=disp-{{ sls_path }}
+ctap.GetInfo     * @anyvm @anyvm     deny
+
+u2f.Authenticate * @anyvm @tag:usbvm ask user=root default_target=disp-{{ sls_path }}
+u2f.Authenticate * @anyvm @default   ask user=root default_target=disp-{{ sls_path }}
+u2f.Authenticate * @anyvm @anyvm     deny
+
+u2f.Register     * @anyvm @tag:usbvm ask user=root default_target=disp-{{ sls_path }}
+u2f.Register     * @anyvm @default   ask user=root default_target=disp-{{ sls_path }}
+u2f.Register     * @anyvm @anyvm     deny
+
+policy.RegisterArgument +u2f.Authenticate @tag:usbvm @anyvm allow target=dom0
+policy.RegisterArgument +u2f.Authenticate @anyvm     @anyvm deny
+
+##! Audio
+{# Keep in sync with sys-audio policy #}
+{% set audiovm = 'disp-' ~ sls_path %}
+admin.vm.device.usb.Available * @tag:audiovm sys-usb allow target=dom0
+admin.vm.device.usb.Available * @tag:audiovm @tag:usbvm allow target=dom0
+admin.vm.device.usb.Available * @tag:audiovm @anyvm deny
+
+admin.vm.device.mic.Available * @tag:audiovm @adminvm allow target=dom0
+admin.vm.device.mic.Available * @anyvm @anyvm deny
+
+admin.Events *                @tag:audiovm   @adminvm allow target=dom0
+admin.Events +domain-start    {{ audiovm }} @tag:audiovm-{{ audiovm }} allow target=dom0
+admin.Events +domain-stopped  {{ audiovm }} @tag:audiovm-{{ audiovm }} allow target=dom0
+admin.Events +domain-shutdown {{ audiovm }} @tag:audiovm-{{ audiovm }} allow target=dom0
+admin.Events +connection-established {{ audiovm }} @tag:audiovm-{{ audiovm }} allow target=dom0
+admin.Events * @tag:audiovm   @anyvm deny
+
+admin.vm.CurrentState * {{ audiovm }} @tag:audiovm-{{ audiovm }} allow target=dom0
+admin.vm.CurrentState * @tag:audiovm @adminvm allow target=dom0
+admin.vm.CurrentState * @tag:audiovm @anyvm deny
+
+admin.vm.List * {{ audiovm }} @tag:audiovm-{{ audiovm }} allow target=dom0
+admin.vm.List * @tag:audiovm   @adminvm allow target=dom0
+admin.vm.List * @tag:audiovm   @anyvm deny
+
+admin.vm.feature.CheckWithTemplate +audio {{ audiovm }} @tag:audiovm-{{ audiovm }} allow target=dom0
+admin.vm.feature.CheckWithTemplate +audio @anyvm @tag:audiovm-{{ audiovm }} deny
+
+admin.vm.feature.CheckWithTemplate +audio-low-latency {{ audiovm }} @tag:audiovm-{{ audiovm }} allow target=dom0
+admin.vm.feature.CheckWithTemplate +audio-low-latency @anyvm @tag:audiovm-{{ audiovm }} deny
+
+admin.vm.feature.CheckWithTemplate +audio-model {{ audiovm }} @tag:audiovm-{{ audiovm }} allow target=dom0
+admin.vm.feature.CheckWithTemplate +audio-model @anyvm @tag:audiovm-{{ audiovm }} deny
+
+admin.vm.feature.CheckWithTemplate +supported-service.pipewire {{ audiovm }} @tag:audiovm-{{ audiovm }} allow target=dom0
+admin.vm.feature.CheckWithTemplate +supported-service.pipewire @anyvm @tag:audiovm-{{ audiovm }} deny
+
+admin.vm.property.Get +audiovm {{ audiovm }} @tag:audiovm-{{ audiovm }} allow target=dom0
+admin.vm.property.Get +audiovm @anyvm @tag:audiovm-{{ audiovm }} deny
+
+admin.vm.property.Get +stubdom_xid {{ audiovm }} @tag:audiovm-{{ audiovm }} allow target=dom0
+admin.vm.property.Get +stubdom_xid @anyvm @tag:audiovm-{{ audiovm }} deny
+
+admin.vm.property.Get +xid {{ audiovm }} @tag:audiovm-{{ audiovm }} allow target=dom0
+admin.vm.property.Get +xid @anyvm @tag:audiovm-{{ audiovm }} deny
+
+admin.vm.property.GetAll * {{ audiovm }} @tag:audiovm-{{ audiovm }} deny notify=no
+admin.vm.property.GetAll * @anyvm @tag:audiovm-{{ audiovm }} deny
+
+# vim:ft=qrexecpolicy foldmethod=expr foldexpr=getline(v\:lnum)=~'^##!'?'>1'\:'=':

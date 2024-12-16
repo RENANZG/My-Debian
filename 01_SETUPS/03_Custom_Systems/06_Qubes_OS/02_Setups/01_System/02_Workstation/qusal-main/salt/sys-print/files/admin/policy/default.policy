@@ -1,0 +1,12 @@
+# SPDX-FileCopyrightText: 2024 Benjamin Grande M. S. <ben.grande.b@gmail.com>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+## Do not modify this file, create a new policy with with a lower number in the
+## file name instead. For example `30-user.policy`.
+qusal.Print * @tag:print-client @tag:print-server allow
+qusal.Print * @tag:print-client @default allow target=sys-print
+qusal.Print * @anyvm @tag:print-server ask
+qusal.Print * @anyvm @default ask default_target=sys-print
+qusal.Print * @anyvm @anyvm deny
+## vim:ft=qrexecpolicy

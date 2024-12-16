@@ -1,0 +1,12 @@
+#!/bin/sh --
+dir=$(mktemp -d /tmp/qubes-dnf-cache-stderr.XXXXXXXXX) || exit
+trap 'rm -rf -- "$dir"' EXIT
+dnf -y makecache >/dev/null 2>"$dir/stderr"
+status=$?
+if [ "$status" -eq 0 ]; then
+    echo 'changed=no comment="DNF cache successfully created"'
+else
+    echo 'changed=no comment="Could not create DNF metadata cache"'
+    cat -- "$dir/stderr" >&2
+fi
+exit "$status"
