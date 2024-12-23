@@ -2,14 +2,14 @@
 
 ########################################################################
 # File Name    : whonix_kvm_setup.sh
-# Description  : This script sets up the Whonix KVM environment and can 
+# Description  : This script sets up the Whonix KVM environment and can
 #                securely clean up data.
 # Dependencies : curl, virsh, tar, gpg, shred
-# Usage        : • Make the script executable with 
+# Usage        : • Make the script executable with
 #                sudo chmod +x whonix_kvm_setup.sh
-#                • Run the script with no arguments to setup:   
+#                • Run the script with no arguments to setup:
 #                sudo ./whonix_kvm_setup.sh
-#                • Run the script with 'secure_wipe' to clean up:   
+#                • Run the script with 'secure_wipe' to clean up:
 #                sudo ./whonix_kvm_setup.sh clean
 # Author       : Me and the bois
 # License      : Free of charge, no warranty
@@ -51,7 +51,7 @@ fi
 
 # Function to check dependencies
 check_dependencies() {
-    for cmd in curl virsh tar gpg shred; do
+    for cmd in curl virsh tar gpg; do
         if ! command -v $cmd &>/dev/null; then
             echo "Error: $cmd is not installed."
             exit 1
