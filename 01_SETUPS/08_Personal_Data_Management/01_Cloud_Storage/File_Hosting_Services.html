@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Personal File Host</title>
-  <style>
+<title>Personal File Host</title>
+<style>
     table {
       width: 100%;
       border-collapse: collapse;
@@ -25,7 +25,7 @@
     a:hover {
       text-decoration: underline;
     }
-  </style>
+</style>
 </head>
 <body>
 

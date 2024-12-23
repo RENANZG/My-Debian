@@ -1,0 +1,1 @@
+https://www.kicksecure.com/wiki/Chroot

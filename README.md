@@ -6620,9 +6620,11 @@
   <summary>5.11 Spoofing</summary>
   <br>
   
-  <a href="https://github.com/alobbs/macchanger">https://github.com/alobbs/macchanger</a>
-  <a href="https://github.com/refraction-networking/utls">https://github.com/refraction-networking/utls</a>
-  <a href="https://github.com/0xsirus/tirdad">https://github.com/0xsirus/tirdad</a>  
+  <ul>
+    <li><a href="https://github.com/alobbs/macchanger">https://github.com/alobbs/macchanger</a></li>
+    <li><a href="https://github.com/refraction-networking/utls">https://github.com/refraction-networking/utls</a></li>
+    <li><a href="https://github.com/0xsirus/tirdad">https://github.com/0xsirus/tirdad</a></li>
+  </ul>
   
   <h4>• Address Spoof</h4>
   
@@ -6640,7 +6642,8 @@
   
   <h5>∙ To opt-out of <b>global maps</b> (https://wigle.net), rename your network WiFi SSID to</h5>
   
-  <pre>&lt;SSID&gt;_optout_nomap
+  <pre>
+  &lt;SSID&gt;_optout_nomap
   </pre>
   
   <h5>∙ To opt-out of Mozilla Location Services</h5>
@@ -9572,6 +9575,22 @@
   <button onclick="navigator.clipboard.writeText('sudo apt install grsync')">Copy</button>
   
   <p>GRSYNC is a graphical interface for the rsync command line program. It can be used for local directory synchronization.</p>
+  
+  <p>Tip to include only pdf and zip files:</p>
+  
+  <pre><code>
+  --include='*/'
+  --include='*.pdf'
+  --include='*.zip'
+  --exclude='*'
+  </code></pre>
+  
+  <p>Tip to exclude hidden files and folders:</p>
+  
+  <pre><code>
+  --exclude='.*'
+  --exclude='.*/*'
+  </code></pre>
   
   <!-- ########## -->
   
@@ -13318,7 +13337,7 @@
       <button onclick="navigator.clipboard.writeText('sudo debugfs')">Copy</button>
     </li>
     <li>
-      <strong>DD Command (Data Destroyer):</strong>
+      <strong>DD Command ("Data Destroyer"):</strong>
       <p>These commands overwrite the entire disk with either zeros or random data, destroying all data on the disk.</p>
       <pre><code>$ sudo dd if=/dev/zero of=/dev/sda bs=1M status=progress
   </pre></code></pre>

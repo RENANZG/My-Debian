@@ -169,6 +169,7 @@
 </table>
 
 <p>*Use 2FA whenever possible for sensitive activities.</p>
+<p>*Consider using deniable encryption in contexts where the ability to deny possession of information is critical.</p>
 
 </body>
 </html>

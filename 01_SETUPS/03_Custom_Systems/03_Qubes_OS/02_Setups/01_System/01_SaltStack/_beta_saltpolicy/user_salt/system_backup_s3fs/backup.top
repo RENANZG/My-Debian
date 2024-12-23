@@ -1,0 +1,7 @@
+base:
+  dom0:
+    - install-s3fs
+    - setup-s3fs-credentials
+    - mount-s3-bucket
+    - perform-backup
+    - unmount-s3-bucket

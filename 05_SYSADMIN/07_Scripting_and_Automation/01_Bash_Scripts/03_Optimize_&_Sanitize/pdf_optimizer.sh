@@ -5,7 +5,7 @@
 # Description  : This script optimizes PDF files using Ghostscript with
 #                different settings based on user selected option.
 # Dependencies : Ghostscript (gs)
-# Usage        : • Make the script executable with 
+# Usage        : • Make the script executable with
 #                  chmod +x pdf_optimizer.sh
 #                • Run the script with a PDF file or a folder:
 #                  bash pdf_optimizer.sh <file_or_folder>
@@ -94,19 +94,50 @@ optimize_pdf() {
         -dMonoImageResolution=96 \
         -sOutputFile="$output_file" "$input_file"
       ;;
-    "scanned")
-      gs -dNOPAUSE -dBATCH -dSAFER \
+    "scanned1")
+      gs -dNOPAUSE -dBATCH -dQUIET \
         -sDEVICE=pdfwrite \
         -dCompatibilityLevel=1.4 \
-        -dPDFSETTINGS=/screen \
-        -dEmbedAllFonts=true \
+        -dColorImageDownsampleType=/Bicubic \
+        -dColorImageResolution=96 \
+        -dGrayImageDownsampleType=/Bicubic \
+        -dGrayImageResolution=96 \
+        -dMonoImageDownsampleType=/Bicubic \
+        -dMonoImageResolution=96\
+        -dJPEGQ=85 \
         -dSubsetFonts=true \
+        -dEmbedAllFonts=true \
+        -dOptimize=true \
+        -dAutoFilterColorImages=true \
+        -dAutoFilterGrayImages=true \
+        -dDownsampleColorImages=true \
+        -dDownsampleGrayImages=true \
+        -dDownsampleMonoImages=true \
+        -dColorConversionStrategy=/LeaveColorUnchanged \
+        -dRemoveUnusedObjects=true \
+        -sOutputFile="$output_file" "$input_file"
+      ;;
+    "scanned2")
+      gs -dNOPAUSE -dBATCH -dQUIET \
+        -sDEVICE=pdfwrite \
+        -dCompatibilityLevel=1.4 \
         -dColorImageDownsampleType=/Bicubic \
         -dColorImageResolution=144 \
         -dGrayImageDownsampleType=/Bicubic \
         -dGrayImageResolution=144 \
         -dMonoImageDownsampleType=/Bicubic \
         -dMonoImageResolution=144 \
+        -dJPEGQ=85 \
+        -dSubsetFonts=true \
+        -dEmbedAllFonts=true \
+        -dOptimize=true \
+        -dAutoFilterColorImages=true \
+        -dAutoFilterGrayImages=true \
+        -dDownsampleColorImages=true \
+        -dDownsampleGrayImages=true \
+        -dDownsampleMonoImages=true \
+        -dColorConversionStrategy=/LeaveColorUnchanged \
+        -dRemoveUnusedObjects=true \
         -sOutputFile="$output_file" "$input_file"
       ;;
     "advanced")
@@ -145,8 +176,9 @@ echo "2. Ebook: Good quality and reasonable size (dpi 150)"
 echo "3. Printer: High quality, larger size (dpi 300)"
 echo "4. Prepress: Best quality, largest size (dpi 300)"
 echo "5. Adobe PDF: Good for old Adobe documents (dpi 96)"
-echo "6. Scanned PDF: Good for scanned documents (dpi 144)"
-echo "7. Advanced: Customized in source script"
+echo "6. Scanned PDF: Good for scanned documents (dpi 96)"
+echo "7. Scanned PDF: Good for scanned documents (dpi 144)"
+echo "8. Advanced: Customized in source script"
 read -p "Enter the number corresponding to your choice: " choice
 
 # Set method based on user input
@@ -156,8 +188,9 @@ case "$choice" in
   3) method="printer" ;;
   4) method="prepress" ;;
   5) method="acrobat" ;;
-  6) method="scanned" ;;
-  7) method="advanced" ;;
+  6) method="scanned1" ;;
+  7) method="scanned2" ;;
+  8) method="advanced" ;;
   *) echo "Invalid choice"; exit 1 ;;
 esac
 
